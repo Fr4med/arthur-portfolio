@@ -1,5 +1,7 @@
 # Content updates
 
+The site uses the SHABBAT SESH blue, #659fd5, as its shared accent. Brand colors are defined in app/globals.css and apply to every route, contact/social sections and interaction states. The favicon uses the same blue. Cool charcoal backgrounds support the palette; the paper artwork retains its original colors. The home sticker reads FILM IT.
+
 The blog index reads `lib/posts.ts`. Add an entry with a unique slug, title, category, image ID, alt text, excerpt and an existing article URL. Create the matching page under `app/blog/<slug>/page.tsx` and give it its own metadata. The SHABBAT SESH feature is listed in the blog and lives at `/shabbat-sesh`.
 
 Photos are stored as 640px and up-to-1600px WebP files in `public/photos`. `lib/photo-manifest.json` records their original filenames and final dimensions. Use the shared `Photo` component so the browser selects a suitable size. Originals remain in D:/website.
