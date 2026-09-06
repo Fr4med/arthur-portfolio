@@ -8,7 +8,7 @@ The premiere facts and credits were adapted from https://truesk8boardmag.com/sha
 
 The dedicated biography is at `/about`. Social URLs are centralized in `lib/socials.ts`. The featured portrait uses photo 01. Event cards link to the photo journal, film feature or YouTube film. There are no Instagram Story or Highlight links.
 
-The film route is now `/shabbat-sesh`. `/shaba-sesh` permanently redirects to it. The film title reuses the original poster lettering through a clipped view of the existing image. Page headings use Titan One to match its rounded style; body copy remains readable in Geist.
+The film route is now `/shabbat-sesh`. `/shaba-sesh` permanently redirects to it. The SHABBAT SESH title is live, selectable HTML text in Luckiest Guy, with a blue fill and dark outline. This font is a close visual approximation; the original logo typeface has not been confirmed. The clipped logo image has been removed. Other film-page display text uses the same font, while body copy stays in Geist. The original full premiere poster remains. The two marked Golda photos, photo IDs 03 and 04, have been removed from this page.
 
 The shared contact component prepares a mailto draft in the visitor's email app. It does not send or store messages itself. The recipient is gogosd20@gmail.com, configured in components/site-footer.tsx.
 
