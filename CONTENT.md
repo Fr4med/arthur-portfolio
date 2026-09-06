@@ -6,7 +6,7 @@ Photos are stored as 640px and up-to-1600px WebP files in `public/photos`. `lib/
 
 The premiere facts and credits were adapted from https://truesk8boardmag.com/shabbatsesh/. The premiere poster provides the date and Salamon Tadasa spelling. Event photography is credited to Noam Maimon in the source. Do not extend that credit to other sessions without confirmation.
 
-The dedicated biography is at `/about`. Social URLs are centralized in `lib/socials.ts`. Its Instagram highlight links were verified on Arthur's public profile; individual post captions require a login and were not copied. The featured portrait uses photo 01.
+The dedicated biography is at `/about`. Social URLs are centralized in `lib/socials.ts`. The featured portrait uses photo 01. Event cards link to the photo journal, film feature or YouTube film. There are no Instagram Story or Highlight links.
 
 The film route is now `/shabbat-sesh`. `/shaba-sesh` permanently redirects to it. The film title reuses the original poster lettering through a clipped view of the existing image. Page headings use Titan One to match its rounded style; body copy remains readable in Geist.
 
@@ -14,4 +14,10 @@ The shared contact component prepares a mailto draft in the visitor's email app.
 
 The About page biography uses Arthur's supplied wording. The six event and session cards are curated in `app/about/page.tsx` using supplied photos. These cards are edited manually.
 
-Below the cards, `components/instagram-feed.tsx` loads Instagram's official profile embed at `https://www.instagram.com/arthurkhitrik/embed/`. Instagram serves the current profile preview when visitors load it, so new posts can appear without a site edit or redeployment. Instagram controls the selection, order and caching; this does not sync Stories or copy posts into the curated photo cards. No API token, scheduled job or paid feed service is needed. Keep the account public and allow profile embedding in Instagram. If Instagram is blocked by a visitor's browser or unavailable, the permanent "View all posts on Instagram" link remains available. The endpoint was checked on 6 September 2026 and returned Arthur's profile and media.
+The Instagram section uses individual post embeds selected by `lib/instagram-rules.ts`. The general profile embed has been removed because it cannot apply our own relevance rules. Stories and Highlights are rejected before any keyword or manual rule. See `INSTAGRAM-CONTENT.md` for the keyword rules, current caption review and proposed caption structure.
+
+`lib/instagram-posts.json` is a dated snapshot of six public posts inspected on 6 September 2026. It is filtered before display; currently only the SHABBAT SESH post has a clear authorship statement. No runtime scraping is used. The five non-qualifying posts are not rendered.
+
+Automatic ingestion is implemented but is NOT connected yet. `lib/instagram-source.ts` reads up to 150 feed posts/Reels from Meta's Instagram API with Instagram Login, then the same rules select at most six qualifying posts, newest first. Set `INSTAGRAM_ACCESS_TOKEN` as a Sites runtime secret and `INSTAGRAM_USER_ID` as a runtime value after authorizing Arthur's Creator/Business account with the read-only `instagram_business_basic` permission. Use `.env.local` for local development, never commit credentials. The API version is v25.0. No publishing, messaging or Story permissions are requested. The server caches selected results for up to 15 minutes; expired/missing access or API failure falls back to the saved, filtered posts. An empty successful API result stays empty. Instagram tokens expire and must be renewed; token renewal is not automated in this version. Do not describe live syncing as active until the credentials are connected and verified against the actual account.
+
+Validation: `node --experimental-strip-types --test tests/instagram.test.mjs` exercises real caption decisions, English/Hebrew credits, rejection of other people's credits and Stories, deduplication, API pagination and failure behavior. The API connection has only been tested with mocked responses until account authorization is available.

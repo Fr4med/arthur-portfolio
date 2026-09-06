@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   description: 'Arthur Khitrik, a videographer and editor from the skateboarding world. Photos from the sessions, events and the latest from Instagram.',
 };
 
-const highlights = [
-  { title: 'Behind the lens', image: 2, alt: 'Arthur looking through his camera at the skatepark', href: 'https://www.instagram.com/stories/highlights/17998462889760491/', label: 'INSTAGRAM HIGHLIGHT', external: true },
+const events = [
+  { title: 'Behind the lens', image: 2, alt: 'Arthur looking through his camera at the skatepark', href: '/blog/behind-the-camera', label: 'PHOTO JOURNAL', external: false },
   { title: 'Golda best trick', image: 3, alt: 'A skater clearing the checkerboard obstacle as Arthur films at the Golda contest', href: '/shabbat-sesh', label: 'GOLDA / TEL AVIV', external: false },
-  { title: 'Paris 25', image: 12, alt: 'Arthur filming a skate session in Paris', href: 'https://www.instagram.com/stories/highlights/17897271243315281/', label: 'INSTAGRAM HIGHLIGHT', external: true },
+  { title: 'Paris 25', image: 12, alt: 'Arthur filming a skate session in Paris', href: '/blog/behind-the-camera', label: 'PHOTO JOURNAL', external: false },
   { title: 'H-Town Adventures', image: 15, alt: 'Arthur rolling alongside a skater to film a ledge trick', href: 'https://www.youtube.com/watch?v=a_6WP38cPLs', label: 'WATCH THE FILM', external: true },
   { title: 'Between takes', image: 7, alt: 'Arthur and a skater reviewing their footage at the skatepark', href: '/blog/behind-the-camera', label: 'PHOTO JOURNAL', external: false },
-  { title: 'SHABBAT SESH', image: 13, alt: 'SHABBAT SESH projected above the audience at Gilis Skateshop', href: 'https://www.instagram.com/stories/highlights/17907731490207059/', label: 'PREMIERE NIGHT', external: true },
+  { title: 'SHABBAT SESH', image: 13, alt: 'SHABBAT SESH projected above the audience at Gilis Skateshop', href: '/shabbat-sesh', label: 'PREMIERE NIGHT', external: false },
 ];
 
 export default function About() {
@@ -42,7 +42,7 @@ export default function About() {
           <a className="text-link" href="https://www.instagram.com/arthurkhitrik/" target="_blank" rel="noreferrer">@arthurkhitrik ↗</a>
         </div>
         <div className="highlight-grid event-grid">
-          {highlights.map(item => <a href={item.href} key={item.title} target={item.external ? '_blank' : undefined} rel={item.external ? 'noreferrer' : undefined}>
+          {events.map(item => <a href={item.href} key={item.title} target={item.external ? '_blank' : undefined} rel={item.external ? 'noreferrer' : undefined}>
             <Photo id={item.image} alt={item.alt} />
             <span>{item.title} ↗</span>
             <small>{item.label}</small>
