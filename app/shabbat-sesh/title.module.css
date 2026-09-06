@@ -1,0 +1,11 @@
+.title {
+  margin: 30px 0 32px;
+  max-width: 440px;
+  line-height: 0;
+}
+
+.title img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
