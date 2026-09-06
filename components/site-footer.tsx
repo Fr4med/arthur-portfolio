@@ -1,0 +1,1 @@
+export default function SiteFooter(){return <footer><div className="footer-top"><a href="/">ARTHUR KHITRIK © 2026</a><a href="#top">BACK TO TOP ↑</a></div><div className="footer-name" aria-hidden="true">KEEP ROLLING.</div><div className="footer-bottom"><span>VIDEOGRAPHER & EDITOR</span><span>SEE YOU AT THE NEXT SPOT.</span></div></footer>}

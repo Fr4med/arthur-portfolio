@@ -1,0 +1,1 @@
+export default function SiteHeader(){return <header className="site-header"><a className="wordmark" href="/" aria-label="Arthur Khitrik home">AK<span>●</span></a><span className="header-role">VIDEOGRAPHER<br/>& EDITOR</span><nav aria-label="Main navigation"><a href="/shaba-sesh">SHABA SESH</a><a href="/blog">BLOG</a><a href="/#about">ABOUT ↗</a></nav></header>}
