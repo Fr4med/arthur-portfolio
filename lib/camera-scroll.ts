@@ -6,12 +6,12 @@ export function cameraScrollProgress(sectionTop: number, sectionHeight: number, 
   return clamp(-sectionTop / Math.max(sectionHeight - viewportHeight, 1));
 }
 
-/** The original hero appears only after the camera has finished turning at 82%. */
+/** Reveal from the angled, lens-forward pose in Arthur's reference, through the final turn. */
 export function cameraHeroReveal(progress: number) {
   const t = clamp(progress);
-  const copy = ease((t - 0.86) / 0.1);
-  const art = ease((t - 0.88) / 0.1);
-  return { copy, art, cue: 1 - ease((t - 0.84) / 0.09) };
+  const copy = ease((t - 0.58) / 0.32);
+  const art = ease((t - 0.61) / 0.32);
+  return { copy, art, cue: 1 - ease((t - 0.56) / 0.12) };
 }
 
 /** Put the whole bounding sphere above even the farthest edge of the view frustum. */

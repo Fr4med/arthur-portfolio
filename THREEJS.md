@@ -1,6 +1,6 @@
 # Scroll-driven camera introduction
 
-The homepage opens with the original navigation fixed at the top of the viewport and one combined camera/hero sequence on the existing charcoal background. Once the camera finishes turning, the original headline and paper film cover pop into view. The archive, About section and footer follow unchanged.
+The homepage opens with the original navigation fixed at the top of the viewport and one combined camera/hero sequence on the existing charcoal background. From the angled, lens-forward position in Arthur's reference, the original headline and paper film cover gradually appear while the camera finishes turning. The archive, About section and footer follow unchanged.
 
 ## Animation
 
@@ -21,7 +21,7 @@ The supplied model's lens points along Three.js +Z in its original orientation. 
 - Complete a 360-degree turn in Arthur's XY plane by 72%.
 - Tilt the lens 90 degrees from Arthur's +Z toward +X between 18% and 82%.
 - Hold the exact front-facing pose from 82%.
-- Keep the camera at full opacity in a background layer. Reveal the copy from 86% to 96% and pop in the film card from 88% to 98% in front of it. Only the scroll cue fades between 84% and 93%.
+- Keep the camera at full opacity in a background layer. Start the copy reveal at 58%, when the lens faces forward at an angle, and finish at 90%. The film card follows from 61% to 93%. Each entrance spans 32% of the scroll, with the complete composition holding through the end. Only the scroll cue fades between 56% and 68%.
 - Release the sticky section at 100%, continuing through the same original hero into the archive.
 
 The rotations overlap during the descent. Separate spin and tilt quaternions preserve a complete revolution and exact final alignment. A spherical camera fit accommodates the pitch and yaw on landscape and portrait screens.

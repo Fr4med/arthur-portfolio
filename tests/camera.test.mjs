@@ -142,14 +142,19 @@ test('camera starts entirely outside the view and the raised pose stays in frame
   }
 });
 
-test('the original hero reveals after the camera finishes, with a reversible handoff', () => {
-  for (const p of [0, 0.5, 0.72, 0.82, 0.84, 0.86]) {
+test('the original hero reveals gradually from the angled pose through the final turn', () => {
+  for (const p of [0, 0.25, 0.5, 0.58]) {
     assert.equal(cameraHeroReveal(p).copy, 0);
     assert.equal(cameraHeroReveal(p).art, 0);
   }
-  const middle = cameraHeroReveal(0.91);
+  assert.ok(cameraHeroReveal(0.60).copy > 0);
+  assert.equal(cameraHeroReveal(0.60).art, 0);
+  const middle = cameraHeroReveal(0.75);
   assert.ok(middle.copy > 0 && middle.copy < 1);
   assert.ok(middle.art > 0 && middle.art < middle.copy);
+  assert.ok(cameraScrollPose(0.75, 5).pitch < 0, 'The camera is still turning during the reveal');
+  assert.ok(cameraHeroReveal(0.82).art < 1, 'The entrance continues after the camera settles');
+  assert.deepEqual(cameraHeroReveal(0.94), { copy: 1, art: 1, cue: 0 });
   assert.deepEqual(cameraScrollPose(0.91, 5), cameraScrollPose(1, 5));
   assert.deepEqual(cameraHeroReveal(1), { copy: 1, art: 1, cue: 0 });
   assert.deepEqual(cameraHeroReveal(0), { copy: 0, art: 0, cue: 1 });
