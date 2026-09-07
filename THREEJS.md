@@ -1,4 +1,6 @@
-# Three.js homepage
+# Three.js prototype
+
+The original homepage opening was restored after feedback on 7 September 2026. The prototype and model remain in the project, but app/page.tsx does not import or mount the camera component. Define the camera placement, animation sequence and scroll behavior with Arthur before integrating it into the existing opening section.
 
 The pre-redesign site was committed and pushed before implementation:
 
@@ -7,7 +9,7 @@ The pre-redesign site was committed and pushed before implementation:
 
 This checkpoint includes the SHABBAT SESH title changes already present in the checkout. It is available in the existing Sites source repository. No separate GitHub repository was created.
 
-`components/camera-hero.tsx` owns the homepage composition, loading/fallback states and accessible controls. It imports `lib/camera-scene.ts` only after mounting in the browser. Three.js renders the supplied GLB in a black scene, with studio environment lighting and a blue rim light. The portfolio routes and HTML controls continue to use React; they do not depend on WebGL to function.
+`components/camera-hero.tsx` contains the retained prototype composition, loading/fallback states and accessible controls. It imports `lib/camera-scene.ts` only after mounting in the browser. Three.js renders the supplied GLB in a black scene, with studio environment lighting and a blue rim light. The portfolio routes and HTML controls continue to use React; they do not depend on WebGL to function.
 
 The model is copied from `../outputs/panasonic-hmc150/panasonic-hmc150.glb`. It is approximately 6.8 MB, with 114 meshes and 88,787 triangles. Its three textures are embedded. The original Blender source and renders are in the same output directory. The model is an approximate visualization of a Panasonic AG-HMC150.
 
