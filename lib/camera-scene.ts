@@ -2,12 +2,14 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { cameraDistance } from './camera-framing';
+import { cameraScrollPose, introCameraDistance } from './camera-scroll';
 
 type Options = {
   signal: AbortSignal;
   onReady: () => void;
   onError: () => void;
   onPauseChange: (paused: boolean) => void;
+  scrollDriven?: boolean;
 };
 
 function disposeModel(root: THREE.Object3D) {
@@ -73,6 +75,12 @@ export function mountCameraScene(host: HTMLElement, options: Options) {
   let width = 1;
   let height = 1;
   let dimensions = new THREE.Vector3(1, 1, 1);
+  let progress = 0;
+  let entryHeight = 4;
+  const spin = new THREE.Quaternion();
+  const tilt = new THREE.Quaternion();
+  const up = new THREE.Vector3(0, 1, 0);
+  const horizontal = new THREE.Vector3(1, 0, 0);
   let pointer: { id: number; x: number; y: number } | null = null;
   options.onPauseChange(paused);
 
@@ -81,14 +89,33 @@ export function mountCameraScene(host: HTMLElement, options: Options) {
     if (disposed || !ready || !visible || document.hidden) return;
     const delta = lastTime ? Math.min((time - lastTime) / 1000, 0.05) : 0;
     lastTime = time;
-    if (!paused) {
+    if (!options.scrollDriven && !paused) {
       elapsed += delta;
       yaw += delta * 0.12;
     }
-    pivot.rotation.set(0.035, yaw, -0.035);
-    pivot.position.y = Math.sin(elapsed * 0.8) * 0.06;
+    applyPose();
     renderer.render(scene, camera);
-    if (!paused) frame = requestAnimationFrame(render);
+    if (!options.scrollDriven && !paused) frame = requestAnimationFrame(render);
+  }
+
+  function applyPose() {
+    if (options.scrollDriven) {
+      const pose = cameraScrollPose(motion.matches ? 1 : progress, entryHeight);
+      spin.setFromAxisAngle(up, pose.yaw);
+      tilt.setFromAxisAngle(horizontal, pose.pitch);
+      pivot.quaternion.copy(spin).multiply(tilt);
+      pivot.position.set(0, pose.y, 0);
+    } else {
+      pivot.rotation.set(0.035, yaw, -0.035);
+      pivot.position.y = Math.sin(elapsed * 0.8) * 0.06;
+    }
+  }
+
+  function setProgress(value: number) {
+    const next = Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
+    if (progress === next) return;
+    progress = next;
+    refresh();
   }
 
   function refresh() {
@@ -108,7 +135,11 @@ export function mountCameraScene(host: HTMLElement, options: Options) {
     width = Math.max(host.clientWidth, 1);
     height = Math.max(host.clientHeight, 1);
     camera.aspect = width / height;
-    camera.position.set(0, 0.35, cameraDistance(dimensions.x, dimensions.y, dimensions.z, camera.aspect));
+    const distance = options.scrollDriven
+      ? introCameraDistance(dimensions.x, dimensions.y, dimensions.z, camera.aspect)
+      : cameraDistance(dimensions.x, dimensions.y, dimensions.z, camera.aspect);
+    camera.position.set(0, options.scrollDriven ? 0 : 0.35, distance);
+    entryHeight = distance * Math.tan(camera.fov * Math.PI / 360) + dimensions.length() * 0.1;
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
@@ -122,7 +153,7 @@ export function mountCameraScene(host: HTMLElement, options: Options) {
   }
 
   function pointerDown(event: PointerEvent) {
-    if (!ready || event.button !== 0) return;
+    if (options.scrollDriven || !ready || event.button !== 0) return;
     pointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
   }
 
@@ -145,7 +176,7 @@ export function mountCameraScene(host: HTMLElement, options: Options) {
 
   function pointerUp() { pointer = null; }
   function keyDown(event: KeyboardEvent) {
-    if (!ready) return;
+    if (options.scrollDriven || !ready) return;
     if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
       event.preventDefault();
       yaw += event.key === 'ArrowLeft' ? -0.15 : 0.15;
@@ -182,7 +213,9 @@ export function mountCameraScene(host: HTMLElement, options: Options) {
 
   async function load() {
     try {
-      const response = await fetch('/models/panasonic-hmc150.glb', { signal: options.signal });
+      const response = await fetch('/models/panasonic-hmc150.glb', {
+        signal: AbortSignal.any([options.signal, AbortSignal.timeout(20000)]),
+      });
       if (!response.ok) throw new Error('Camera model could not be loaded');
       const data = await response.arrayBuffer();
       if (disposed) return;
@@ -201,7 +234,7 @@ export function mountCameraScene(host: HTMLElement, options: Options) {
       resize();
       // Only hide the loading state after the first complete frame.
       renderer.compile(scene, camera);
-      pivot.rotation.set(0.035, yaw, -0.035);
+      applyPose();
       renderer.render(scene, camera);
       options.onReady();
       refresh();
@@ -238,5 +271,5 @@ export function mountCameraScene(host: HTMLElement, options: Options) {
 
   resize();
   void load();
-  return { setPaused, reset, dispose };
+  return { setPaused, setProgress, reset, dispose };
 }

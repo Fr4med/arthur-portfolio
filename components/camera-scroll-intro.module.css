@@ -1,0 +1,75 @@
+.intro {
+  --intro-progress: 0;
+  position: relative;
+  height: 320vh;
+  height: 320svh;
+  background: #000;
+}
+.viewport {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background: #000;
+}
+.canvas { position: absolute; inset: 0; pointer-events: none; }
+.canvas canvas { display: block; width: 100%; height: 100%; }
+.topline, .bottomline {
+  position: absolute;
+  z-index: 2;
+  left: 5%;
+  right: 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  letter-spacing: .08em;
+  color: var(--muted-foreground);
+}
+.topline { top: max(22px, env(safe-area-inset-top)); }
+.bottomline { bottom: max(28px, env(safe-area-inset-bottom)); }
+.bottomline>span { color: var(--primary); }
+.topline a, .bottomline a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--foreground);
+  letter-spacing: 0;
+}
+.topline a:hover, .bottomline a:hover { color: var(--primary); }
+.loading {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted-foreground);
+  font: 12px var(--font-geist-mono), monospace;
+  letter-spacing: 2px;
+  pointer-events: none;
+}
+.progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary);
+  transform: scaleX(var(--intro-progress));
+  transform-origin: left;
+}
+.fallback { position: absolute; inset: 12% 10%; width: 80%; height: 76%; object-fit: contain; }
+.intro[data-status=error] { height: 100svh; }
+@media (max-width: 600px) {
+  .topline, .bottomline { left: 6%; right: 6%; letter-spacing: 0; gap: 12px; }
+  .topline { top: max(14px, env(safe-area-inset-top)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro { height: 100svh; }
+  .progress { display: none; }
+}

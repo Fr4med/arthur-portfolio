@@ -3,6 +3,7 @@ import { useState } from 'react';
 import SiteHeader from '@/components/site-header';
 import SiteFooter from '@/components/site-footer';
 import Photo from '@/components/photo';
+import CameraScrollIntro from '@/components/camera-scroll-intro';
 import { ArrowDown, ArrowUpRight, Play } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 const films = [
@@ -15,7 +16,8 @@ const films = [
 export default function Home(){
 const [active,setActive]=useState<number|null>(null); const film=active===null?null:films[active];
 return <><a className="skip-link" href="#work">Skip to films</a>
-<SiteHeader/>
+<CameraScrollIntro/>
+<div id="site-start" tabIndex={-1}><SiteHeader/></div>
 <main id="top"><section className="hero" aria-labelledby="hero-title"><div className="hero-copy"><p className="eyebrow"><span className="record-dot"/> BEHIND THE LENS. IN THE EDIT.</p><h1 id="hero-title">ARTHUR<br/><span>KHITRIK.</span></h1><p className="hero-description">Skateboarding. People. Places.<br/>Films from the streets, made to be felt.</p><a className="work-link" href="#work">TAKE A LOOK <ArrowDown size={18}/></a></div>
 <div className="hero-art"><div className="paper-back" aria-hidden="true"><span>FIELD NOTES / 001</span><span>KEEP ROLLING.</span></div><button className="hero-cover" onClick={()=>setActive(0)} aria-label="Play SHABBAT SESH"><span className="tape" aria-hidden="true"/><span className="cover-top"><span>AN ARTHUR KHITRIK FILM</span><span>▶ REC</span></span><span className="hero-image"><img src="https://i.ytimg.com/vi/-T_E8705WKM/hqdefault.jpg" alt="SHABBAT SESH skate film cover" fetchPriority="high"/><span className="cover-play"><Play fill="currentColor" size={24}/></span></span><span className="cover-title">SHABBAT<br/>SESH<span>↗</span></span><span className="cover-bottom"><span>SKATEBOARDING / FILM / FRIENDS</span><span>01</span></span></button><span className="handwritten" aria-hidden="true">press play ↗</span><div className="film-sticker" aria-hidden="true">FILM IT.<span>AK © 2026</span></div></div>
 <a className="feature-story-link" href="/shabbat-sesh">THE SHABBAT SESH STORY ↗</a><div className="hero-footer"><span>INDEPENDENT FILMMAKING</span><span>SCROLL FOR THE GOOD STUFF <ArrowDown size={14}/></span></div></section>
