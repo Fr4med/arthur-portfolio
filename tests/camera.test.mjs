@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { Box3, Matrix4, Vector3, Quaternion, Euler, PerspectiveCamera, Group, Mesh, BoxGeometry, MeshStandardMaterial, Texture, NoColorSpace, SRGBColorSpace } from 'three';
 import { cameraDistance } from '../lib/camera-framing.ts';
-import { cameraHeroReveal, cameraScrollPose, cameraScrollProgress, introCameraDistance } from '../lib/camera-scroll.ts';
+import { cameraEntryHeight, cameraHeroReveal, cameraScrollPose, cameraScrollProgress, introCameraDistance } from '../lib/camera-scroll.ts';
 import { applyCameraMaterials, createFinishTextures } from '../lib/camera-materials.ts';
 
 const buffer = readFileSync(new URL('../public/models/panasonic-hmc150.glb', import.meta.url));
@@ -76,7 +76,7 @@ test('scroll starts lens-up and ends with exactly one revolution and a 90-degree
   const start = cameraScrollPose(0, 5);
   const finish = cameraScrollPose(1, 5);
   assert.equal(start.y, 5);
-  assert.equal(finish.y, 0);
+  assert.equal(finish.y, 0.35);
   assert.ok(Math.abs(finish.yaw - start.yaw - 2 * Math.PI) < 1e-10);
   assert.ok(Math.abs(finish.pitch - start.pitch - Math.PI / 2) < 1e-10);
   const lens = new Vector3(0, 0, 1);
@@ -109,7 +109,7 @@ test('scroll coordinates clamp at the section boundaries and reverse when scroll
   assert.ok(Number.isFinite(cameraScrollProgress(0, 1000, 1000)));
 });
 
-test('pitch and yaw remain in frame after the entrance, including portrait phones', () => {
+test('camera starts entirely outside the view and the raised pose stays in frame on desktop and phones', () => {
   const size = assetBounds().getSize(new Vector3());
   size.multiplyScalar(3.8 / Math.max(size.x, size.y, size.z));
   const half = size.clone().multiplyScalar(0.5);
@@ -118,10 +118,24 @@ test('pitch and yaw remain in frame after the entrance, including portrait phone
     camera.position.z = introCameraDistance(size.x, size.y, size.z, camera.aspect);
     camera.lookAt(0, 0, 0);
     camera.updateMatrixWorld(true);
-    for (let step = 40; step <= 100; step++) {
-      const rotation = scrollRotation(cameraScrollPose(step / 100, 10));
+    const entry = cameraEntryHeight(size.x, size.y, size.z, camera.position.z);
+    for (const progress of [0, 0.0001]) {
+      const pose = cameraScrollPose(progress, entry);
+      const rotation = scrollRotation(pose);
       for (const x of [-half.x, half.x]) for (const y of [-half.y, half.y]) for (const z of [-half.z, half.z]) {
-        const point = new Vector3(x, y, z).applyQuaternion(rotation).project(camera);
+        const point = new Vector3(x, y, z).applyQuaternion(rotation);
+        point.y += pose.y;
+        point.project(camera);
+        assert.ok(point.y > 1, `Camera visible at start at ${width}×${height}`);
+      }
+    }
+    for (let step = 40; step <= 100; step++) {
+      const pose = cameraScrollPose(step / 100, entry);
+      const rotation = scrollRotation(pose);
+      for (const x of [-half.x, half.x]) for (const y of [-half.y, half.y]) for (const z of [-half.z, half.z]) {
+        const point = new Vector3(x, y, z).applyQuaternion(rotation);
+        point.y += pose.y;
+        point.project(camera);
         assert.ok(Math.abs(point.x) < 0.98 && Math.abs(point.y) < 0.98, `Clipping at ${width}×${height}, progress ${step}%`);
       }
     }
@@ -137,8 +151,8 @@ test('the original hero reveals after the camera finishes, with a reversible han
   assert.ok(middle.copy > 0 && middle.copy < 1);
   assert.ok(middle.art > 0 && middle.art < middle.copy);
   assert.deepEqual(cameraScrollPose(0.91, 5), cameraScrollPose(1, 5));
-  assert.deepEqual(cameraHeroReveal(1), { copy: 1, art: 1, camera: 0 });
-  assert.deepEqual(cameraHeroReveal(0), { copy: 0, art: 0, camera: 1 });
+  assert.deepEqual(cameraHeroReveal(1), { copy: 1, art: 1, cue: 0 });
+  assert.deepEqual(cameraHeroReveal(0), { copy: 0, art: 0, cue: 1 });
   // A tall mobile hero gets the same scroll runway, then releases into normal document flow.
   const header = 130, contentHeight = 1100, runway = 2000;
   assert.equal(cameraScrollProgress(header - header, contentHeight + runway, contentHeight), 0);

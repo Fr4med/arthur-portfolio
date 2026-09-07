@@ -44,11 +44,11 @@ export default function CameraScrollIntro({ children }: { children: ReactNode })
       const reveal = cameraHeroReveal(progress);
       section.style.setProperty('--copy-reveal', String(reveal.copy));
       section.style.setProperty('--art-reveal', String(reveal.art));
-      section.style.setProperty('--camera-opacity', String(reveal.camera));
+      section.style.setProperty('--cue-opacity', String(reveal.cue));
       section.style.setProperty('--intro-progress', String(progress));
       // Invisible content must not receive keyboard focus during the camera sequence.
       content.inert = enhanced && reveal.art < 0.98;
-      if (cueRef.current) cueRef.current.inert = !enhanced || reveal.camera < 0.1;
+      if (cueRef.current) cueRef.current.inert = !enhanced || reveal.cue < 0.1;
       if (exploreRequested.current && !content.inert) {
         content.focus({ preventScroll: true });
         exploreRequested.current = false;

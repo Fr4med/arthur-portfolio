@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { cameraDistance } from './camera-framing';
-import { cameraScrollPose, introCameraDistance } from './camera-scroll';
+import { cameraEntryHeight, cameraScrollPose, introCameraDistance } from './camera-scroll';
 import { applyCameraMaterials } from './camera-materials';
 
 type Options = {
@@ -101,6 +101,8 @@ export function mountCameraScene(host: HTMLElement, options: Options) {
 
   function applyPose() {
     if (options.scrollDriven) {
+      // No model fragments on the initial frame, including after returning to the top.
+      pivot.visible = progress > 0 || motion.matches;
       const pose = cameraScrollPose(motion.matches ? 1 : progress, entryHeight);
       spin.setFromAxisAngle(up, pose.yaw);
       tilt.setFromAxisAngle(horizontal, pose.pitch);
@@ -140,7 +142,7 @@ export function mountCameraScene(host: HTMLElement, options: Options) {
       ? introCameraDistance(dimensions.x, dimensions.y, dimensions.z, camera.aspect)
       : cameraDistance(dimensions.x, dimensions.y, dimensions.z, camera.aspect);
     camera.position.set(0, options.scrollDriven ? 0 : 0.35, distance);
-    entryHeight = distance * Math.tan(camera.fov * Math.PI / 360) + dimensions.length() * 0.1;
+    entryHeight = cameraEntryHeight(dimensions.x, dimensions.y, dimensions.z, distance, camera.fov);
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);

@@ -4,13 +4,13 @@
   --stage-height: 790px;
   --copy-reveal: 1;
   --art-reveal: 1;
-  --camera-opacity: 0;
+  --cue-opacity: 0;
   position: relative;
   background: var(--background);
 }
-.viewport { position: relative; min-height: calc(100svh - var(--header-height)); }
+.viewport { position: relative; isolation: isolate; min-height: calc(100svh - var(--header-height)); }
 .scene { display: none; }
-.content { position: relative; z-index: 1; }
+.content { position: relative; z-index: 2; }
 .content :global(.hero) { min-height: calc(100svh - var(--header-height)); }
 .intro[data-enhanced=true] { height: calc(var(--stage-height) + 260svh); }
 .intro[data-enhanced=true] .viewport { position: sticky; top: var(--header-height); }
@@ -21,7 +21,7 @@
   left: 0;
   width: 100%;
   height: calc(100svh - var(--header-height));
-  opacity: var(--camera-opacity);
+  z-index: 0;
 }
 .intro[data-enhanced=true] .content { pointer-events: none; }
 .intro[data-enhanced=true] .content:not([inert]) { pointer-events: auto; }
@@ -40,6 +40,7 @@
 .canvas { position: absolute; inset: 0; pointer-events: none; }
 .canvas canvas { display: block; width: 100%; height: 100%; }
 .bottomline {
+  opacity: var(--cue-opacity);
   position: absolute;
   z-index: 2;
   left: 5%;
@@ -75,6 +76,7 @@
   pointer-events: none;
 }
 .progress {
+  opacity: var(--cue-opacity);
   position: absolute;
   bottom: 0;
   left: 0;

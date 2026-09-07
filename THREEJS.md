@@ -16,12 +16,12 @@ Arthur's coordinate convention maps to Three.js as follows:
 
 The supplied model's lens points along Three.js +Z in its original orientation. lib/camera-scroll.ts defines the motion:
 
-- Start above the viewport center with the lens pointing upward.
-- Descend to the center over the first 40% of scroll progress.
+- Start completely above the viewport with the lens pointing upward. The entry offset clears the whole model's bounding sphere; the pivot is also hidden at exact zero scroll.
+- Descend over the first 40% of scroll progress to a position 0.35 scene units above center in Arthur's upward Z direction.
 - Complete a 360-degree turn in Arthur's XY plane by 72%.
 - Tilt the lens 90 degrees from Arthur's +Z toward +X between 18% and 82%.
 - Hold the exact front-facing pose from 82%.
-- Fade the camera between 84% and 93%, reveal the copy from 86% to 96%, and pop in the film card from 88% to 98%.
+- Keep the camera at full opacity in a background layer. Reveal the copy from 86% to 96% and pop in the film card from 88% to 98% in front of it. Only the scroll cue fades between 84% and 93%.
 - Release the sticky section at 100%, continuing through the same original hero into the archive.
 
 The rotations overlap during the descent. Separate spin and tilt quaternions preserve a complete revolution and exact final alignment. A spherical camera fit accommodates the pitch and yaw on landscape and portrait screens.
