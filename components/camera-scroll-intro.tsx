@@ -1,42 +1,74 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { ArrowDown, ArrowDownRight } from 'lucide-react';
-import { cameraScrollProgress } from '@/lib/camera-scroll';
+import { useEffect, useRef, useState, type ReactNode, type MouseEvent } from 'react';
+import { ArrowDown } from 'lucide-react';
+import { cameraHeroReveal, cameraScrollProgress } from '@/lib/camera-scroll';
 import type { mountCameraScene } from '@/lib/camera-scene';
 import styles from './camera-scroll-intro.module.css';
 
-export default function CameraScrollIntro() {
+export default function CameraScrollIntro({ children }: { children: ReactNode }) {
   const sectionRef = useRef<HTMLElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const cueRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<ReturnType<typeof mountCameraScene> | null>(null);
+  const exploreRequested = useRef(false);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
   useEffect(() => {
     const section = sectionRef.current;
     const viewport = viewportRef.current;
+    const content = contentRef.current;
     const host = hostRef.current;
-    if (!section || !viewport || !host) return;
+    const header = document.getElementById('home-navigation');
+    if (!section || !viewport || !content || !host) return;
     const abort = new AbortController();
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let frame = 0;
     let progress = 0;
+    let failed = false;
+
     function update() {
       frame = 0;
-      if (!section || !viewport || abort.signal.aborted) return;
+      if (!section || !viewport || !content || abort.signal.aborted) return;
+      const enhanced = !motion.matches && !failed;
+      section.dataset.enhanced = String(enhanced);
+      const headerHeight = header?.getBoundingClientRect().height || 0;
+      section.style.setProperty('--header-height', `${headerHeight}px`);
+      document.documentElement.style.setProperty('--home-header-height', `${headerHeight}px`);
+      section.style.setProperty('--stage-height', `${viewport.offsetHeight}px`);
       const rect = section.getBoundingClientRect();
-      progress = cameraScrollProgress(rect.top, rect.height, viewport.clientHeight);
+      progress = enhanced ? cameraScrollProgress(rect.top - headerHeight, rect.height, viewport.offsetHeight) : 1;
       controlsRef.current?.setProgress(progress);
+      const reveal = cameraHeroReveal(progress);
+      section.style.setProperty('--copy-reveal', String(reveal.copy));
+      section.style.setProperty('--art-reveal', String(reveal.art));
+      section.style.setProperty('--camera-opacity', String(reveal.camera));
       section.style.setProperty('--intro-progress', String(progress));
+      // Invisible content must not receive keyboard focus during the camera sequence.
+      content.inert = enhanced && reveal.art < 0.98;
+      if (cueRef.current) cueRef.current.inert = !enhanced || reveal.camera < 0.1;
+      if (exploreRequested.current && !content.inert) {
+        content.focus({ preventScroll: true });
+        exploreRequested.current = false;
+      }
     }
     function schedule() {
       if (!frame) frame = requestAnimationFrame(update);
     }
+    function showContent() {
+      failed = true;
+      setStatus('error');
+      update();
+    }
     const resize = new ResizeObserver(schedule);
-    resize.observe(section);
     resize.observe(viewport);
+    if (header) resize.observe(header);
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('pageshow', schedule);
+    window.addEventListener('resize', schedule);
+    motion.addEventListener('change', schedule);
     update();
 
     import('@/lib/camera-scene').then(({ mountCameraScene }) => {
@@ -45,11 +77,11 @@ export default function CameraScrollIntro() {
         signal: abort.signal,
         scrollDriven: true,
         onReady: () => { setStatus('ready'); schedule(); },
-        onError: () => setStatus('error'),
+        onError: showContent,
         onPauseChange: () => {},
       });
       controlsRef.current.setProgress(progress);
-    }).catch(() => { if (!abort.signal.aborted) setStatus('error'); });
+    }).catch(() => { if (!abort.signal.aborted) showContent(); });
 
     return () => {
       abort.abort();
@@ -59,26 +91,37 @@ export default function CameraScrollIntro() {
       resize.disconnect();
       window.removeEventListener('scroll', schedule);
       window.removeEventListener('pageshow', schedule);
+      window.removeEventListener('resize', schedule);
+      motion.removeEventListener('change', schedule);
+      content.inert = false;
+      document.documentElement.style.removeProperty('--home-header-height');
+      delete section.dataset.enhanced;
     };
   }, []);
 
-  return <>
-    <section ref={sectionRef} className={styles.intro} data-status={status} aria-label="Camera introduction">
-      <div ref={viewportRef} className={styles.viewport}>
-        <div className={styles.topline}>
-          <span>ARTHUR KHITRIK</span>
-          <a href="#site-start">ENTER SITE <ArrowDownRight size={16} /></a>
-        </div>
+  function explore(event: MouseEvent<HTMLAnchorElement>) {
+    const section = sectionRef.current;
+    const viewport = viewportRef.current;
+    if (!section || !viewport) return;
+    event.preventDefault();
+    exploreRequested.current = true;
+    const headerHeight = document.getElementById('home-navigation')?.getBoundingClientRect().height || 0;
+    const top = window.scrollY + section.getBoundingClientRect().top - headerHeight;
+    window.scrollTo({ top: top + section.offsetHeight - viewport.offsetHeight, behavior: 'smooth' });
+  }
+
+  return <section ref={sectionRef} className={styles.intro} data-status={status} aria-label="Arthur Khitrik, videographer and editor">
+    <div ref={viewportRef} className={styles.viewport}>
+      <div className={styles.scene}>
         <div ref={hostRef} className={styles.canvas} aria-hidden="true" />
         {status === 'loading' && <p className={styles.loading} role="status">LOADING CAMERA…</p>}
-        {status === 'error' && <img className={styles.fallback} src="/models/panasonic-hmc150-preview.png" alt="Panasonic camera" width="1200" height="900" />}
-        <div className={styles.bottomline}>
+        <div ref={cueRef} className={styles.bottomline}>
           <span>FILM IT.</span>
-          <a href="#site-start">SCROLL TO EXPLORE <ArrowDown size={16} /></a>
+          <a href="#site-start" onClick={explore}>SCROLL TO EXPLORE <ArrowDown size={16} /></a>
         </div>
         <div className={styles.progress} aria-hidden="true" />
       </div>
-    </section>
-    <noscript><style>{`.${styles.intro}{display:none}`}</style></noscript>
-  </>;
+      <div ref={contentRef} id="site-start" tabIndex={-1} className={styles.content}>{children}</div>
+    </div>
+  </section>;
 }

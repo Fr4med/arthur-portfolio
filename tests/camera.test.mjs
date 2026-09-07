@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { Box3, Matrix4, Vector3, Quaternion, Euler, PerspectiveCamera } from 'three';
+import { Box3, Matrix4, Vector3, Quaternion, Euler, PerspectiveCamera, Group, Mesh, BoxGeometry, MeshStandardMaterial, Texture, NoColorSpace, SRGBColorSpace } from 'three';
 import { cameraDistance } from '../lib/camera-framing.ts';
-import { cameraScrollPose, cameraScrollProgress, introCameraDistance } from '../lib/camera-scroll.ts';
+import { cameraHeroReveal, cameraScrollPose, cameraScrollProgress, introCameraDistance } from '../lib/camera-scroll.ts';
+import { applyCameraMaterials, createFinishTextures } from '../lib/camera-materials.ts';
 
 const buffer = readFileSync(new URL('../public/models/panasonic-hmc150.glb', import.meta.url));
 const jsonLength = buffer.readUInt32LE(12);
@@ -125,4 +126,74 @@ test('pitch and yaw remain in frame after the entrance, including portrait phone
       }
     }
   }
+});
+
+test('the original hero reveals after the camera finishes, with a reversible handoff', () => {
+  for (const p of [0, 0.5, 0.72, 0.82, 0.84, 0.86]) {
+    assert.equal(cameraHeroReveal(p).copy, 0);
+    assert.equal(cameraHeroReveal(p).art, 0);
+  }
+  const middle = cameraHeroReveal(0.91);
+  assert.ok(middle.copy > 0 && middle.copy < 1);
+  assert.ok(middle.art > 0 && middle.art < middle.copy);
+  assert.deepEqual(cameraScrollPose(0.91, 5), cameraScrollPose(1, 5));
+  assert.deepEqual(cameraHeroReveal(1), { copy: 1, art: 1, camera: 0 });
+  assert.deepEqual(cameraHeroReveal(0), { copy: 0, art: 0, camera: 1 });
+  // A tall mobile hero gets the same scroll runway, then releases into normal document flow.
+  const header = 130, contentHeight = 1100, runway = 2000;
+  assert.equal(cameraScrollProgress(header - header, contentHeight + runway, contentHeight), 0);
+  assert.equal(cameraScrollProgress(header - runway - header, contentHeight + runway, contentHeight), 1);
+});
+
+test('surface maps contain actual detail, valid normals and correct texture color spaces', () => {
+  for (const finish of ['housing', 'rubber', 'metal', 'fabric']) {
+    const maps = createFinishTextures(finish);
+    assert.equal(maps.map.colorSpace, SRGBColorSpace);
+    assert.equal(maps.normalMap.colorSpace, NoColorSpace);
+    assert.equal(maps.roughnessMap.colorSpace, NoColorSpace);
+    assert.ok(new Set(maps.roughnessMap.image.data).size > 20);
+    const normals = maps.normalMap.image.data;
+    for (let i = 0; i < normals.length; i += 4) {
+      const length = Math.hypot(normals[i] / 255 * 2 - 1, normals[i + 1] / 255 * 2 - 1, normals[i + 2] / 255 * 2 - 1);
+      assert.ok(Math.abs(length - 1) < 0.014);
+      assert.equal(normals[i + 3], 255);
+    }
+    Object.values(maps).forEach(texture => texture.dispose());
+  }
+});
+
+test('camera materials retain baked foam and lettering while adding distinct shared surface maps', () => {
+  const root = new Group();
+  const originals = new Map();
+  for (const definition of gltf.materials) {
+    const material = new MeshStandardMaterial({ name: definition.name });
+    if (definition.name === 'FoamGrain') material.normalMap = new Texture();
+    originals.set(definition.name, material);
+    root.add(new Mesh(new BoxGeometry(), material));
+  }
+  const strap = new Mesh(new BoxGeometry(), originals.get('Rubber'));
+  strap.name = 'HMC_GripStrap';
+  root.add(strap);
+  const foamNormal = originals.get('FoamGrain').normalMap;
+  applyCameraMaterials(root, 16);
+  assert.equal(originals.get('FoamGrain').normalMap, foamNormal);
+  assert.equal(originals.get('Label').map, null);
+  assert.notEqual(strap.material, originals.get('Rubber'));
+  assert.notEqual(strap.material.normalMap, originals.get('Rubber').normalMap);
+  for (const name of ['Housing', 'Rubber', 'Metal']) {
+    const material = originals.get(name);
+    assert.ok(material.normalMap && material.roughnessMap && material.map);
+    assert.equal(material.normalMap.anisotropy, 4);
+    for (const mesh of gltf.meshes) for (const primitive of mesh.primitives) {
+      if (gltf.materials[primitive.material].name === name) assert.notEqual(primitive.attributes.TEXCOORD_0, undefined);
+    }
+  }
+  const textures = new Set();
+  root.traverse(object => {
+    if (!object.isMesh) return;
+    for (const value of Object.values(object.material)) if (value?.isTexture) textures.add(value);
+    object.geometry.dispose();
+    object.material.dispose();
+  });
+  textures.forEach(texture => texture.dispose());
 });

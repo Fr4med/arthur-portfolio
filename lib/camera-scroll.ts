@@ -5,6 +5,14 @@ export function cameraScrollProgress(sectionTop: number, sectionHeight: number, 
   return clamp(-sectionTop / Math.max(sectionHeight - viewportHeight, 1));
 }
 
+/** The original hero appears only after the camera has finished turning at 82%. */
+export function cameraHeroReveal(progress: number) {
+  const t = clamp(progress);
+  const copy = ease((t - 0.86) / 0.1);
+  const art = ease((t - 0.88) / 0.1);
+  return { copy, art, camera: 1 - ease((t - 0.84) / 0.09) };
+}
+
 /** User axes: X = toward viewer, Y = screen-horizontal, Z = up.
  * Three.js axes: X = screen-horizontal, Y = up, Z = toward viewer.
  * The GLB's lens points along Three.js +Z in its unrotated pose.

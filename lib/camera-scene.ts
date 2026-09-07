@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { cameraDistance } from './camera-framing';
 import { cameraScrollPose, introCameraDistance } from './camera-scroll';
+import { applyCameraMaterials } from './camera-materials';
 
 type Options = {
   signal: AbortSignal;
@@ -35,13 +36,13 @@ function disposeModel(root: THREE.Object3D) {
 
 export function mountCameraScene(host: HTMLElement, options: Options) {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#000000');
+  scene.background = new THREE.Color(getComputedStyle(host).getPropertyValue('--background').trim() || '#0b0d10');
   const camera = new THREE.PerspectiveCamera(32, 1, 0.01, 100);
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, window.innerWidth < 700 ? 1.25 : 1.75));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.6;
+  renderer.toneMappingExposure = 1.1;
   renderer.domElement.setAttribute('aria-hidden', 'true');
   host.appendChild(renderer.domElement);
 
@@ -49,15 +50,15 @@ export function mountCameraScene(host: HTMLElement, options: Options) {
   const room = new RoomEnvironment();
   const environment = pmrem.fromScene(room, 0.04);
   scene.environment = environment.texture;
-  scene.environmentIntensity = 1.25;
+  scene.environmentIntensity = 0.75;
   room.dispose();
   pmrem.dispose();
 
-  const key = new THREE.DirectionalLight('#ffffff', 3.5);
+  const key = new THREE.DirectionalLight('#ffffff', 3.2);
   key.position.set(-3, 5, 4);
-  const fill = new THREE.DirectionalLight('#cde4ff', 2.1);
+  const fill = new THREE.DirectionalLight('#cde4ff', 1.4);
   fill.position.set(4, 1, 2);
-  const rim = new THREE.DirectionalLight('#659fd5', 3.3);
+  const rim = new THREE.DirectionalLight('#659fd5', 2.8);
   rim.position.set(-2, 2, -4);
   scene.add(key, fill, rim);
 
@@ -222,6 +223,7 @@ export function mountCameraScene(host: HTMLElement, options: Options) {
       const gltf = await new GLTFLoader().parseAsync(data, '/models/');
       if (disposed) { disposeModel(gltf.scene); return; }
       const root = gltf.scene;
+      applyCameraMaterials(root, renderer.capabilities.getMaxAnisotropy());
       const box = new THREE.Box3().setFromObject(root);
       const center = box.getCenter(new THREE.Vector3());
       const size = box.getSize(new THREE.Vector3());
