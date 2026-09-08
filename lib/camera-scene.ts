@@ -144,6 +144,8 @@ export function mountCameraScene(host: HTMLElement, options: Options) {
     camera.position.set(0, options.scrollDriven ? 0 : 0.35, distance);
     entryHeight = cameraEntryHeight(dimensions.x, dimensions.y, dimensions.z, distance, camera.fov);
     camera.lookAt(0, 0, 0);
+    // Shift the entire projection exactly 50 CSS pixels up at every scroll pose.
+    if (options.scrollDriven) camera.setViewOffset(width, height, 0, 50, width, height);
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
     refresh();

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { Box3, Matrix4, Vector3, Quaternion, Euler, PerspectiveCamera, Group, Mesh, BoxGeometry, MeshStandardMaterial, Texture, NoColorSpace, SRGBColorSpace } from 'three';
 import { cameraDistance } from '../lib/camera-framing.ts';
-import { cameraEntryHeight, cameraHeroReveal, cameraScrollPose, cameraScrollProgress, introCameraDistance } from '../lib/camera-scroll.ts';
+import { cameraEntryHeight, cameraHeroReveal, cameraLogoOpacity, cameraScrollPose, cameraScrollProgress, introCameraDistance } from '../lib/camera-scroll.ts';
 import { applyCameraMaterials, createFinishTextures } from '../lib/camera-materials.ts';
 
 const buffer = readFileSync(new URL('../public/models/panasonic-hmc150.glb', import.meta.url));
@@ -162,6 +162,47 @@ test('the original hero reveals gradually from the angled pose through the final
   const header = 130, contentHeight = 1100, runway = 2000;
   assert.equal(cameraScrollProgress(header - header, contentHeight + runway, contentHeight), 0);
   assert.equal(cameraScrollProgress(header - runway - header, contentHeight + runway, contentHeight), 1);
+});
+
+test('opening logo fades with scroll and is fully gone at 30 percent', () => {
+  assert.equal(cameraLogoOpacity(0), 1);
+  assert.equal(cameraLogoOpacity(0.15), 0.5);
+  for (const progress of [0.3, 0.58, 0.82, 1, 2]) assert.equal(cameraLogoOpacity(progress), 0);
+  let previous = 1;
+  for (let step = 0; step <= 30; step++) {
+    const opacity = cameraLogoOpacity(step / 100);
+    assert.ok(opacity <= previous && opacity >= 0);
+    previous = opacity;
+  }
+  assert.equal(cameraLogoOpacity(-1), 1);
+  assert.equal(cameraLogoOpacity(0.15), 0.5, 'Reverse scroll restores the same opacity');
+});
+
+test('projection offset lifts every pose by exactly 50 CSS pixels at any viewport size', () => {
+  const size = assetBounds().getSize(new Vector3());
+  size.multiplyScalar(3.8 / Math.max(size.x, size.y, size.z));
+  const half = size.clone().multiplyScalar(0.5);
+  for (const [width, height] of [[1440, 791], [748, 747], [390, 714], [320, 438], [844, 281]]) {
+    const original = new PerspectiveCamera(32, width / height, 0.01, 100);
+    original.position.z = introCameraDistance(size.x, size.y, size.z, original.aspect);
+    original.lookAt(0, 0, 0);
+    original.updateMatrixWorld(true);
+    const raised = original.clone();
+    raised.setViewOffset(width, height, 0, 50, width, height);
+    const entry = cameraEntryHeight(size.x, size.y, size.z, original.position.z);
+    for (let step = 0; step <= 100; step += 5) {
+      const pose = cameraScrollPose(step / 100, entry);
+      const rotation = scrollRotation(pose);
+      for (const x of [-half.x, half.x]) for (const y of [-half.y, half.y]) for (const z of [-half.z, half.z]) {
+        const point = new Vector3(x, y, z).applyQuaternion(rotation);
+        point.y += pose.y;
+        const before = point.clone().project(original);
+        const after = point.clone().project(raised);
+        assert.ok(Math.abs((after.y - before.y) * height / 2 - 50) < 1e-8);
+        assert.ok(Math.abs(after.x - before.x) < 1e-8);
+      }
+    }
+  }
 });
 
 test('surface maps contain actual detail, valid normals and correct texture color spaces', () => {

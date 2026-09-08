@@ -16,7 +16,8 @@ Arthur's coordinate convention maps to Three.js as follows:
 
 The supplied model's lens points along Three.js +Z in its original orientation. lib/camera-scroll.ts defines the motion:
 
-- Start completely above the viewport with the lens pointing upward. The entry offset clears the whole model's bounding sphere; the pivot is also hidden at exact zero scroll.
+- Show the Arthur Khitrik opening wordmark at zero scroll, fading it smoothly to zero opacity over the first 30% of the sequence. Reverse scrolling restores it.
+- Start the camera completely above the viewport with the lens pointing upward. The entry offset clears the whole model's bounding sphere; the pivot is also hidden at exact zero scroll.
 - Descend over the first 40% of scroll progress to a position 0.35 scene units above center in Arthur's upward Z direction.
 - Complete a 360-degree turn in Arthur's XY plane by 72%.
 - Tilt the lens 90 degrees from Arthur's +Z toward +X between 18% and 82%.
@@ -24,7 +25,7 @@ The supplied model's lens points along Three.js +Z in its original orientation. 
 - Keep the camera at full opacity in a background layer. Start the copy reveal at 58%, when the lens faces forward at an angle, and finish at 90%. The film card follows from 61% to 93%. Each entrance spans 32% of the scroll, with the complete composition holding through the end. Only the scroll cue fades between 56% and 68%.
 - Release the sticky section at 100%, continuing through the same original hero into the archive.
 
-The rotations overlap during the descent. Separate spin and tilt quaternions preserve a complete revolution and exact final alignment. A spherical camera fit accommodates the pitch and yaw on landscape and portrait screens.
+The rotations overlap during the descent. Separate spin and tilt quaternions preserve a complete revolution and exact final alignment. A spherical camera fit accommodates the pitch and yaw on landscape and portrait screens. A 50px vertical view offset raises the entire animation by exactly 50 CSS pixels at every pose and screen size, without changing the timing, model opacity or the position of the hero content.
 
 ## Runtime and accessibility
 

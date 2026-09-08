@@ -5,6 +5,7 @@
   --copy-reveal: 1;
   --art-reveal: 1;
   --cue-opacity: 0;
+  --logo-opacity: 1;
   position: relative;
   background: var(--background);
 }
@@ -39,6 +40,26 @@
 .intro[data-enhanced=true] .content :global(.feature-story-link) { opacity: var(--art-reveal); }
 .canvas { position: absolute; inset: 0; pointer-events: none; }
 .canvas canvas { display: block; width: 100%; height: 100%; }
+.introLogo {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6% 50px;
+  font-family: var(--font-display), Impact, sans-serif;
+  font-size: clamp(64px, 12vw, 180px);
+  line-height: .96;
+  letter-spacing: -.045em;
+  color: var(--foreground);
+  opacity: var(--logo-opacity);
+  pointer-events: none;
+  user-select: none;
+}
+.introLogo>span:last-child { color: var(--primary); }
+.logoDot { color: var(--foreground); }
 .bottomline {
   opacity: var(--cue-opacity);
   position: absolute;
@@ -66,7 +87,7 @@
 .bottomline a:hover { color: var(--primary); }
 .loading {
   position: absolute;
-  inset: 0;
+  inset: auto 0 90px;
   margin: 0;
   display: grid;
   place-items: center;

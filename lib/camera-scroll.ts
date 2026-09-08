@@ -6,6 +6,10 @@ export function cameraScrollProgress(sectionTop: number, sectionHeight: number, 
   return clamp(-sectionTop / Math.max(sectionHeight - viewportHeight, 1));
 }
 
+export function cameraLogoOpacity(progress: number) {
+  return 1 - ease(clamp(progress) / 0.3);
+}
+
 /** Reveal from the angled, lens-forward pose in Arthur's reference, through the final turn. */
 export function cameraHeroReveal(progress: number) {
   const t = clamp(progress);

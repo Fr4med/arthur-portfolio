@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode, type MouseEvent } from 'react';
 import { ArrowDown } from 'lucide-react';
-import { cameraHeroReveal, cameraScrollProgress } from '@/lib/camera-scroll';
+import { cameraHeroReveal, cameraLogoOpacity, cameraScrollProgress } from '@/lib/camera-scroll';
 import type { mountCameraScene } from '@/lib/camera-scene';
 import styles from './camera-scroll-intro.module.css';
 
@@ -45,6 +45,7 @@ export default function CameraScrollIntro({ children }: { children: ReactNode })
       section.style.setProperty('--copy-reveal', String(reveal.copy));
       section.style.setProperty('--art-reveal', String(reveal.art));
       section.style.setProperty('--cue-opacity', String(reveal.cue));
+      section.style.setProperty('--logo-opacity', String(cameraLogoOpacity(progress)));
       section.style.setProperty('--intro-progress', String(progress));
       // Invisible content must not receive keyboard focus during the camera sequence.
       content.inert = enhanced && reveal.art < 0.98;
@@ -114,6 +115,7 @@ export default function CameraScrollIntro({ children }: { children: ReactNode })
     <div ref={viewportRef} className={styles.viewport}>
       <div className={styles.scene}>
         <div ref={hostRef} className={styles.canvas} aria-hidden="true" />
+        <div className={styles.introLogo} aria-hidden="true"><span>ARTHUR</span><span>KHITRIK<span className={styles.logoDot}>.</span></span></div>
         {status === 'loading' && <p className={styles.loading} role="status">LOADING CAMERA…</p>}
         <div ref={cueRef} className={styles.bottomline}>
           <span>FILM IT.</span>
