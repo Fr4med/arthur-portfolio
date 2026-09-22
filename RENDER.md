@@ -33,6 +33,14 @@ Run `npm ci --include=dev`, `npm run build`, `npm test`, and `npx tsc --noEmit`.
 
 The browser audit compares the preserved original Worker build with the Node production build, covering all five content pages, desktop and mobile layouts, camera reveal, film dialogs, contact navigation, and the old `/shaba-sesh` redirect. A pre-existing short-landscape film dialog overflow was fixed by bounding the dialog to the viewport and allowing its content to scroll.
 
-Render deployment and third-party video playback must also be checked on the deployed URL. The local migration does not provision a Render service or activate a paid plan.
+Third-party video playback must also be checked on the deployed URL. Local browser tests could verify the dialog and fallback link, but the embedded player remained blank in the test browser.
+
+## Live service and keep-alive
+
+Arthur's free service is `https://arthur-portfolio-yi47.onrender.com`, in Frankfurt. Auto-deploy is disabled; deploy validated revisions deliberately through Render. The lightweight `/health` route returns JSON without invoking Instagram or loading media.
+
+`.github/workflows/render-keepalive.yml` sends a request every 15 minutes, at minutes 7, 22, 37, and 52 UTC, and can be run manually in GitHub Actions. Standard GitHub-hosted runners are free while this repository is public. It requires no API credentials and no running local PC. Check costs before changing repository visibility.
+
+GitHub schedules can be delayed and public-repository schedules are disabled after 60 days without repository activity. Render sleeps after 15 minutes without inbound traffic, so this requested interval is best-effort, not an uptime guarantee. Render also limits each workspace to 750 free instance hours per calendar month; the single service fits that time allowance, but additional free services share it. Bandwidth and build limits still apply.
 
 References: [Render Web Services](https://render.com/docs/web-services), [Render Next.js hosting choices](https://render.com/docs/deploy-nextjs-app).
