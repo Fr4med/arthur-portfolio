@@ -11,17 +11,7 @@ export default async function InstagramFeed() {
     <div className="instagram-post-grid">
       {posts.map(post => <article key={post.id}>
       <p className="instagram-post-role">{post.roles.join(' / ')}</p>
-      <div className="instagram-feed-frame">
-      <iframe
-        src={`${post.permalink}embed/`}
-        title={`Arthur Khitrik: ${post.caption.slice(0, 100)}`}
-        width="540"
-        height="680"
-        loading="lazy"
-        allow="encrypted-media; fullscreen"
-        referrerPolicy="strict-origin-when-cross-origin"
-      />
-      </div>
+      <p className="instagram-post-caption">{post.caption}</p>
       <a className="text-link" href={post.permalink} target="_blank" rel="noreferrer">View post on Instagram ↗</a>
       </article>)}
     </div>
