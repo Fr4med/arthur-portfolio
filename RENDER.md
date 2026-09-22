@@ -33,11 +33,13 @@ Run `npm ci --include=dev`, `npm run build`, `npm test`, and `npx tsc --noEmit`.
 
 The browser audit compares the preserved original Worker build with the Node production build, covering all five content pages, desktop and mobile layouts, camera reveal, film dialogs, contact navigation, and the old `/shaba-sesh` redirect. A pre-existing short-landscape film dialog overflow was fixed by bounding the dialog to the viewport and allowing its content to scroll.
 
-Third-party video playback must also be checked on the deployed URL. Local browser tests could verify the dialog and fallback link, but the embedded player remained blank in the test browser.
+Local browser tests verified the dialog and fallback link. After deployment, the H-Town Adventures embedded video played successfully in the live browser. This does not verify every third-party video or future availability.
 
 ## Live service and keep-alive
 
-Arthur's free service is `https://arthur-portfolio-yi47.onrender.com`, in Frankfurt. Auto-deploy is disabled; deploy validated revisions deliberately through Render. The lightweight `/health` route returns JSON without invoking Instagram or loading media.
+Arthur's site is `https://arthurkhitrik.com`, with `www.arthurkhitrik.com` redirecting to it. Both Cloudflare CNAME records point directly to `arthur-portfolio-yi47.onrender.com` with DNS-only mode. Render manages HTTPS. Email MX/SPF/DKIM records are preserved.
+
+Arthur's free service also remains accessible at `https://arthur-portfolio-yi47.onrender.com`, in Frankfurt. Auto-deploy is disabled; deploy validated revisions deliberately through Render. The lightweight `/health` route returns JSON without invoking Instagram or loading media.
 
 `.github/workflows/render-keepalive.yml` sends a request every 15 minutes, at minutes 7, 22, 37, and 52 UTC, and can be run manually in GitHub Actions. Standard GitHub-hosted runners are free while this repository is public. It requires no API credentials and no running local PC. Check costs before changing repository visibility.
 
