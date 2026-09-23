@@ -1,7 +1,7 @@
 const recipient = 'bigboss@arthurkhitrik.com';
 const maxBytes = 16384;
 const allowedOrigins = new Set(['https://arthurkhitrik.com', 'https://www.arthurkhitrik.com', 'https://arthur-portfolio-yi47.onrender.com']);
-type Config = {token?: string; accountId?: string};
+type Config = {token?: string};
 type Bucket = {count: number; until: number};
 
 export function createContactHandler(config: () => Config, send: typeof fetch = fetch, now = Date.now) {
@@ -39,8 +39,8 @@ export function createContactHandler(config: () => Config, send: typeof fetch = 
     if (!name || name.length > 100 || name.split('').some(char => char.charCodeAt(0) < 32) || !message || message.length > 3000 || message.includes('\0') || email.length > 254 || !/^[^\s<>@,;]+@[^\s<>@,;]+\.[^\s<>@,;]+$/.test(email)) {
       return json({error: 'Please enter your name, a valid email, and a message of up to 3,000 characters.'}, 400);
     }
-    const {token, accountId} = config();
-    if (!token || !accountId) return json({error: `Sending is temporarily unavailable. Please email ${recipient}.`}, 503);
+    const {token} = config();
+    if (!token) return json({error: `Sending is temporarily unavailable. Please email ${recipient}.`}, 503);
     const time = now();
     for (const [key, bucket] of clients) if (bucket.until <= time) clients.delete(key);
     if (global.until <= time) global = {count: 0, until: time + 3600000};
@@ -50,15 +50,14 @@ export function createContactHandler(config: () => Config, send: typeof fetch = 
     if (bucket.count >= 3 || global.count >= 20) return json({error: 'Too many messages. Please try again later or email Arthur directly.'}, 429);
     bucket.count++; global.count++; clients.set(ip, bucket);
     try {
-      const response = await send(`https://api.cloudflare.com/client/v4/accounts/${accountId}/email/sending/send`, {
+      const response = await send('https://api.resend.com/emails', {
         method: 'POST', headers: {Authorization: `Bearer ${token}`, 'Content-Type': 'application/json'},
-        body: JSON.stringify({from: 'website@arthurkhitrik.com', to: recipient, reply_to: email,
+        body: JSON.stringify({from: 'website@arthurkhitrik.com', to: [recipient], reply_to: email,
           subject: `Website enquiry from ${name}`, text: `Name: ${name}\nReply email: ${email}\n\n${message}`}),
         signal: AbortSignal.timeout(20000),
       });
       const body = await response.json();
-      const result = body.result;
-      if (!response.ok || body.success !== true || result?.permanent_bounces?.length || ![...(result?.delivered || []), ...(result?.queued || [])].includes(recipient)) {
+      if (!response.ok || typeof body?.id !== 'string' || !body.id.trim()) {
         console.error('Contact email was not accepted', response.status);
         return json({error: `Your message could not be sent. Please try again or email ${recipient}.`}, 502);
       }

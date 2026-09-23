@@ -4,14 +4,14 @@ import {createContactHandler} from '../lib/contact-handler.ts';
 
 const valid = {name: 'Visitor', email: 'visitor@example.com', message: 'A film enquiry', website: ''};
 const req = (data = valid, origin = 'https://arthurkhitrik.com') => new Request('https://arthurkhitrik.com/api/contact', {method: 'POST', headers: {'content-type': 'application/json', origin}, body: JSON.stringify(data)});
-const config = () => ({token: 'test-only', accountId: 'test-account'});
-const accepted = () => Response.json({success: true, result: {queued: ['bigboss@arthurkhitrik.com']}});
+const config = () => ({token: 'test-only'});
+const accepted = () => Response.json({id: 'test-email-id'});
 
 test('sends to the fixed official address and sets the visitor as reply-to', async () => {
   let sent;
-  const handler = createContactHandler(config, async (_url, options) => {sent = JSON.parse(options.body); return accepted();});
+  const handler = createContactHandler(config, async (url, options) => {assert.equal(url, 'https://api.resend.com/emails'); assert.equal(options.headers.Authorization, 'Bearer test-only'); sent = JSON.parse(options.body); return accepted();});
   assert.equal((await handler(req({...valid, to: 'attacker@example.com'}))).status, 200);
-  assert.equal(sent.to, 'bigboss@arthurkhitrik.com');
+  assert.deepEqual(sent.to, ['bigboss@arthurkhitrik.com']);
   assert.equal(sent.reply_to, valid.email);
   assert.equal(sent.from, 'website@arthurkhitrik.com');
 });
@@ -23,9 +23,9 @@ test('blocks foreign origins, malformed input, header injection, spam traps and 
   assert.equal((await handler(req({...valid, message: 'x'.repeat(17000)}))).status, 413);
   assert.equal(calls, 0);
 });
-test('never reports success for missing credentials, provider rejection, bounce or network failure', async () => {
+test('never reports success for missing credentials, provider rejection, missing message ID or network failure', async () => {
   assert.equal((await createContactHandler(() => ({}))(req())).status, 503);
-  for (const provider of [async () => Response.json({success:false}, {status:403}), async () => Response.json({success:true,result:{permanent_bounces:['bigboss@arthurkhitrik.com']}}), async () => {throw new Error('offline');}]) {
+  for (const provider of [async () => Response.json({name:'validation_error',message:'Domain not verified'}, {status:403}), async () => Response.json({}), async () => {throw new Error('offline');}]) {
     assert.equal((await createContactHandler(config, provider)(req())).status, 502);
   }
 });
