@@ -6,7 +6,7 @@ The website posts name, reply email and message to `/api/contact` on Render. The
 
 The implementation now uses Resend, replacing the unenabled Cloudflare Email Sending service. Cloudflare continues to handle incoming forwarding. Its enabled forwarding rule is `66a743173b2744dc996ca9fa8abd6f08`; Arthur's Gmail destination was verified earlier in this task.
 
-Resend account access and domain verification are not yet available to this task. No RESEND_API_KEY field was found in the Render environment response. Live sending and inbox delivery remain unverified. Do not deploy the form until setup and a real delivery test succeed.
+The supplied sending-only key is saved as RESEND_API_KEY on the Arthur Render service. The official Resend MCP is registered in Composio as CUSTOM_RESEND_ARTHUR, account ca_UME0cvKS3GJT, with 128 tools synced and the current router session explicitly bound to that account. A domain-list call confirmed the key cannot manage domains. A send test returned HTTP 403 because arthurkhitrik.com is not verified in Resend. No email was sent. Domain verification and live delivery remain pending; do not deploy until they succeed.
 
 ## Setup
 
