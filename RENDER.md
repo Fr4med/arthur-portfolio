@@ -41,8 +41,8 @@ Arthur's site is `https://arthurkhitrik.com`, with `www.arthurkhitrik.com` redir
 
 Arthur's free service also remains accessible at `https://arthur-portfolio-yi47.onrender.com`, in Frankfurt. Auto-deploy is disabled; deploy validated revisions deliberately through Render. The lightweight `/health` route returns JSON without invoking Instagram or loading media.
 
-`.github/workflows/render-keepalive.yml` sends a request every 15 minutes, at minutes 7, 22, 37, and 52 UTC, and can be run manually in GitHub Actions. Standard GitHub-hosted runners are free while this repository is public. It requires no API credentials and no running local PC. Check costs before changing repository visibility.
+The dedicated Cloudflare Worker in `ops/arthur-keepalive` requests Render's `/health` route every five minutes. Its Cron Trigger runs in the Cloudflare account that owns `arthurkhitrik.com`, without a local PC or GitHub runner. A failed health check causes a failed Worker invocation visible in Cloudflare Cron Events. The previous GitHub Actions schedule ran hours late despite reporting successful jobs.
 
-GitHub schedules can be delayed and public-repository schedules are disabled after 60 days without repository activity. Render sleeps after 15 minutes without inbound traffic, so this requested interval is best-effort, not an uptime guarantee. Render also limits each workspace to 750 free instance hours per calendar month; the single service fits that time allowance, but additional free services share it. Bandwidth and build limits still apply.
+The Worker schedule is best-effort. Render sleeps after 15 minutes without inbound traffic and may restart free services independently. Render also limits each workspace to 750 free instance hours per calendar month; additional free services share it. Bandwidth and build limits still apply.
 
 References: [Render Web Services](https://render.com/docs/web-services), [Render Next.js hosting choices](https://render.com/docs/deploy-nextjs-app).

@@ -1,5 +1,11 @@
 # Render migration verification
 
+## Keep-alive replacement, 2026-09-26
+
+The GitHub Actions schedule was replaced with the dedicated Cloudflare Worker in `ops/arthur-keepalive`. The Worker is scoped to the Cloudflare account that owns `arthurkhitrik.com` and has one `*/5 * * * *` Cron Trigger. Cloudflare Analytics recorded a successful execution at 2026-09-25 22:00:41 UTC with one outbound request and zero errors. The public `/health` route returned HTTP 200 with `{"status":"ok"}` after the Worker was deployed.
+
+The previous GitHub schedule had successful jobs several hours apart on 2026-09-25, so it could not reliably keep the free Render service awake. Cloudflare's new cron trigger can take up to 15 minutes to propagate; the first live execution above confirms it began firing. Render may still restart free services independently.
+
 Verified 2026-09-22.
 
 - Public site: https://arthur-portfolio-yi47.onrender.com
