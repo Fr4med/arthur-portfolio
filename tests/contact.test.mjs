@@ -41,3 +41,36 @@ test('limits repeated messages and permits sending after the limit expires', asy
   time += 900001;
   assert.equal((await handler(req())).status, 200);
 });
+test('requires server-verified Turnstile token with matching hostname and action before sending', async () => {
+  let sends = 0;
+  let verification;
+  const handler = createContactHandler(
+    () => ({token: 'test-only', turnstileSecret: 'test-secret', turnstileRequired: true}),
+    async () => {sends++; return accepted();},
+    Date.now,
+    async (url, options) => {
+      assert.equal(url, 'https://challenges.cloudflare.com/turnstile/v0/siteverify');
+      assert.equal(options.body.get('secret'), 'test-secret');
+      assert.equal(options.body.get('response'), 'challenge-token');
+      return Response.json(verification);
+    },
+  );
+  assert.equal((await handler(req())).status, 400);
+  for (const result of [
+    {success: false},
+    {success: true, hostname: 'attacker.example', action: 'contact'},
+    {success: true, hostname: 'arthurkhitrik.com', action: 'other'},
+  ]) {
+    verification = result;
+    assert.equal((await handler(req({...valid, turnstileToken: 'challenge-token'}))).status, 400);
+  }
+  assert.equal(sends, 0);
+  verification = {success: true, hostname: 'arthurkhitrik.com', action: 'contact'};
+  assert.equal((await handler(req({...valid, turnstileToken: 'challenge-token'}))).status, 200);
+  assert.equal(sends, 1);
+});
+test('fails closed when Turnstile is required but unavailable', async () => {
+  assert.equal((await createContactHandler(() => ({token: 'test-only', turnstileRequired: true}))(req({...valid, turnstileToken: 'challenge-token'}))).status, 503);
+  const handler = createContactHandler(() => ({token: 'test-only', turnstileSecret: 'test-secret', turnstileRequired: true}), async () => {throw new Error('Email must not send');}, Date.now, async () => {throw new Error('offline');});
+  assert.equal((await handler(req({...valid, turnstileToken: 'challenge-token'}))).status, 503);
+});

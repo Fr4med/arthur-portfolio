@@ -1,11 +1,11 @@
 const recipient = 'bigboss@arthurkhitrik.com';
 const maxBytes = 16384;
 const allowedOrigins = new Set(['https://arthurkhitrik.com', 'https://www.arthurkhitrik.com', 'https://arthur-portfolio-yi47.onrender.com', 'https://arthur-portfolio-preview.adamkrestol.workers.dev']);
-type Config = {token?: string};
+type Config = {token?: string; turnstileSecret?: string; turnstileRequired?: boolean};
 type Bucket = {count: number; until: number};
 
-export function createContactHandler(config: () => Config, send: typeof fetch = fetch, now = Date.now) {
-  // Bounded in-memory limits for this single Render instance. A restart resets them.
+export function createContactHandler(config: () => Config, send: typeof fetch = fetch, now = Date.now, verify: typeof fetch = fetch) {
+  // These limits apply per process or Worker isolate; Turnstile protects the shared endpoint.
   const clients = new Map<string, Bucket>();
   let global: Bucket = {count: 0, until: 0};
   const json = (body: object, status = 200) => Response.json(body, {status, headers: {'Cache-Control': 'no-store'}});
@@ -39,8 +39,29 @@ export function createContactHandler(config: () => Config, send: typeof fetch = 
     if (!name || name.length > 100 || name.split('').some(char => char.charCodeAt(0) < 32) || !message || message.length > 3000 || message.includes('\0') || email.length > 254 || !/^[^\s<>@,;]+@[^\s<>@,;]+\.[^\s<>@,;]+$/.test(email)) {
       return json({error: 'Please enter your name, a valid email, and a message of up to 3,000 characters.'}, 400);
     }
-    const {token} = config();
+    const {token, turnstileSecret, turnstileRequired} = config();
     if (!token) return json({error: `Sending is temporarily unavailable. Please email ${recipient}.`}, 503);
+    if (turnstileRequired) {
+      if (!turnstileSecret) return json({error: `Sending is temporarily unavailable. Please email ${recipient}.`}, 503);
+      const challenge = typeof input.turnstileToken === 'string' ? input.turnstileToken : '';
+      if (!challenge || challenge.length > 2048) return json({error: 'Please complete the security check and try again.'}, 400);
+      try {
+        const body = new URLSearchParams({secret: turnstileSecret, response: challenge});
+        const ip = request.headers.get('cf-connecting-ip');
+        if (ip) body.set('remoteip', ip);
+        const result = await verify('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          method: 'POST', body, signal: AbortSignal.timeout(10000),
+        });
+        if (!result.ok) throw new Error('Siteverify unavailable');
+        const verdict = await result.json();
+        if (verdict?.success !== true || verdict.hostname !== new URL(request.headers.get('origin')!).hostname || verdict.action !== 'contact') {
+          return json({error: 'Please complete the security check and try again.'}, 400);
+        }
+      } catch {
+        console.error('Contact security check failed');
+        return json({error: 'Security check is temporarily unavailable. Please try again or email Arthur directly.'}, 503);
+      }
+    }
     const time = now();
     for (const [key, bucket] of clients) if (bucket.until <= time) clients.delete(key);
     if (global.until <= time) global = {count: 0, until: time + 3600000};
