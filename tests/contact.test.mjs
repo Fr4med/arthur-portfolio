@@ -15,6 +15,10 @@ test('sends to the fixed official address and sets the visitor as reply-to', asy
   assert.equal(sent.reply_to, valid.email);
   assert.equal(sent.from, 'website@arthurkhitrik.com');
 });
+test('accepts the Cloudflare preview origin for contact form validation', async () => {
+  const handler = createContactHandler(config, async () => accepted());
+  assert.equal((await handler(req(valid, 'https://arthur-portfolio-preview.adamkrestol.workers.dev'))).status, 200);
+});
 test('blocks foreign origins, malformed input, header injection, spam traps and oversized bodies without sending', async () => {
   let calls = 0;
   const handler = createContactHandler(config, async () => {calls++; return accepted();});

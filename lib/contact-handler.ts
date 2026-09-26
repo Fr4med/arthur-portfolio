@@ -1,6 +1,6 @@
 const recipient = 'bigboss@arthurkhitrik.com';
 const maxBytes = 16384;
-const allowedOrigins = new Set(['https://arthurkhitrik.com', 'https://www.arthurkhitrik.com', 'https://arthur-portfolio-yi47.onrender.com']);
+const allowedOrigins = new Set(['https://arthurkhitrik.com', 'https://www.arthurkhitrik.com', 'https://arthur-portfolio-yi47.onrender.com', 'https://arthur-portfolio-preview.adamkrestol.workers.dev']);
 type Config = {token?: string};
 type Bucket = {count: number; until: number};
 
@@ -45,7 +45,7 @@ export function createContactHandler(config: () => Config, send: typeof fetch = 
     for (const [key, bucket] of clients) if (bucket.until <= time) clients.delete(key);
     if (global.until <= time) global = {count: 0, until: time + 3600000};
     // The global cap also limits abuse if a proxy supplies an untrusted client IP.
-    const ip = (request.headers.get('x-forwarded-for') || 'unknown').split(',').at(-1)!.trim().slice(0, 64);
+    const ip = (request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown').split(',').at(-1)!.trim().slice(0, 64);
     const bucket = clients.get(ip) || {count: 0, until: time + 900000};
     if (bucket.count >= 3 || global.count >= 20) return json({error: 'Too many messages. Please try again later or email Arthur directly.'}, 429);
     bucket.count++; global.count++; clients.set(ip, bucket);
