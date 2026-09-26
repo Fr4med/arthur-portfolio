@@ -86,7 +86,7 @@ export default function Contact({email}: {email: string}) {
         <Field><FieldLabel htmlFor="contact-email">Your email</FieldLabel><Input id="contact-email" name="email" type="email" required autoComplete="email" maxLength={254} placeholder="you@example.com" disabled={sending}/></Field>
         <Field><FieldLabel htmlFor="contact-message">Your message</FieldLabel><Textarea id="contact-message" name="message" required maxLength={3000} rows={5} placeholder="Tell me about your project..." aria-describedby="contact-help" disabled={sending}/><FieldDescription id="contact-help">Send a message directly to Arthur. He&apos;ll reply to the email you enter above.</FieldDescription></Field>
         <div hidden aria-hidden="true"><label htmlFor="contact-website">Website</label><input id="contact-website" name="website" tabIndex={-1} autoComplete="off"/></div>
-        <div ref={challengeContainer} aria-label="Security check"/>
+        <div ref={challengeContainer} className="contact-security-check" aria-label="Security check"/>
         <Button type="submit" size="lg" className="h-12 w-fit px-6" disabled={sending || !turnstileToken}>{sending ? 'Sending...' : !turnstileToken ? 'Verifying...' : 'Send message'}<ArrowUpRight data-icon="inline-end"/></Button>
       </FieldGroup>
       <output className="contact-status block" aria-live="polite">{status}</output>
