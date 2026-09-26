@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "vinext dev",
     "build": "vinext build",
-    "deploy:cloudflare": "vinext-cloudflare deploy",
+    "deploy:cloudflare": "wrangler deploy --config deploy/wrangler.jsonc",
     "start": "vinext start --hostname 0.0.0.0",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "lint": "oxlint",
