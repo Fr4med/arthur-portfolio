@@ -15,13 +15,35 @@ test('the shipped camera GLB is complete and self-contained', () => {
   assert.equal(buffer.readUInt32LE(4), 2);
   assert.equal(buffer.readUInt32LE(8), buffer.length);
   assert.equal(buffer.readUInt32LE(16), 0x4e4f534a);
-  assert.equal(gltf.meshes.length, 114);
+  assert.ok(gltf.meshes.length >= 100, 'The complete camera assembly must remain');
+  assert.ok(buffer.length < 6_000_000, 'Keep the textured model under 6 MB');
   assert.ok(gltf.images.length > 0);
   assert.ok(gltf.images.every(image => image.bufferView !== undefined && !image.uri));
   assert.ok(gltf.buffers.every(data => !data.uri));
   const binOffset = 20 + jsonLength;
   assert.equal(buffer.readUInt32LE(binOffset + 4), 0x004e4942);
   assert.ok(buffer.readUInt32LE(binOffset) >= gltf.buffers[0].byteLength);
+});
+
+test('baked ring normals replace the high-detail grips while preserving the rest of the camera', () => {
+  const names = new Set(gltf.nodes.map(node => node.name));
+  assert.equal(gltf.nodes.filter(node => node.mesh !== undefined).length, 112);
+  for (const name of ['MainBody', 'LensHood', 'LensBarrel', 'LensOptic', 'GripStrap', 'MicrophoneFoam', 'RightGrip'])
+    assert.ok(names.has(`HMC_${name}`), `Missing ${name}`);
+  let triangles = 0;
+  for (const node of gltf.nodes) if (node.mesh !== undefined) {
+    for (const primitive of gltf.meshes[node.mesh].primitives) triangles += gltf.accessors[primitive.indices].count / 3;
+  }
+  assert.equal(triangles, 76499);
+  for (const part of ['Focus', 'Zoom']) {
+    assert.ok(!names.has(`HMC_${part}Knurl`));
+    const ring = gltf.nodes.find(node => node.name === `HMC_${part}Ring`);
+    const primitive = gltf.meshes[ring.mesh].primitives[0];
+    const material = gltf.materials[primitive.material];
+    assert.equal(material.name, `Baked${part}Rubber`);
+    assert.ok(material.normalTexture);
+    assert.notEqual(primitive.attributes.TEXCOORD_0, undefined);
+  }
 });
 
 function assetBounds() {
@@ -222,12 +244,42 @@ test('surface maps contain actual detail, valid normals and correct texture colo
   }
 });
 
+test('ScenePlane wear textures survive runtime material setup, including the hand strap', () => {
+  const root = new Group();
+  const wornNodes = gltf.nodes.filter(node => node.mesh !== undefined && gltf.meshes[node.mesh].primitives.some(p => gltf.materials[p.material].name.startsWith('ScenePlaneWorn_')));
+  assert.equal(wornNodes.length, 15, 'Keep all selected worn surfaces');
+  for (const node of wornNodes) {
+    for (const primitive of gltf.meshes[node.mesh].primitives) {
+      const definition = gltf.materials[primitive.material];
+      assert.ok(definition.extras.sceneplaneRevision.startsWith('rev_'));
+      assert.ok(definition.normalTexture && definition.pbrMetallicRoughness.baseColorTexture && definition.pbrMetallicRoughness.metallicRoughnessTexture);
+      const material = new MeshStandardMaterial({name:definition.name, map:new Texture(), normalMap:new Texture(), roughnessMap:new Texture()});
+      const mesh = new Mesh(new BoxGeometry(), material);
+      mesh.name = node.name;
+      root.add(mesh);
+    }
+  }
+  const originals = root.children.map(mesh => ({mesh, material:mesh.material, map:mesh.material.map, normal:mesh.material.normalMap, roughness:mesh.material.roughnessMap}));
+  applyCameraMaterials(root, 8);
+  for (const entry of originals) {
+    assert.equal(entry.mesh.material, entry.material);
+    assert.equal(entry.material.map, entry.map);
+    assert.equal(entry.material.normalMap, entry.normal);
+    assert.equal(entry.material.roughnessMap, entry.roughness);
+    assert.equal(entry.map.repeat.x, 1);
+    assert.equal(entry.normal.anisotropy, 4);
+    entry.mesh.geometry.dispose();
+    entry.material.dispose();
+    entry.map.dispose(); entry.normal.dispose(); entry.roughness.dispose();
+  }
+});
+
 test('camera materials retain baked foam and lettering while adding distinct shared surface maps', () => {
   const root = new Group();
   const originals = new Map();
   for (const definition of gltf.materials) {
     const material = new MeshStandardMaterial({ name: definition.name });
-    if (definition.name === 'FoamGrain') material.normalMap = new Texture();
+    if (definition.normalTexture) material.normalMap = new Texture();
     originals.set(definition.name, material);
     root.add(new Mesh(new BoxGeometry(), material));
   }
@@ -235,8 +287,13 @@ test('camera materials retain baked foam and lettering while adding distinct sha
   strap.name = 'HMC_GripStrap';
   root.add(strap);
   const foamNormal = originals.get('FoamGrain').normalMap;
+  const ringNormals = ['BakedFocusRubber', 'BakedZoomRubber'].map(name => originals.get(name).normalMap);
   applyCameraMaterials(root, 16);
   assert.equal(originals.get('FoamGrain').normalMap, foamNormal);
+  ['BakedFocusRubber', 'BakedZoomRubber'].forEach((name, index) => {
+    assert.equal(originals.get(name).normalMap, ringNormals[index]);
+    assert.equal(originals.get(name).normalMap.repeat.x, 1, 'Baked UVs must not tile');
+  });
   assert.equal(originals.get('Label').map, null);
   assert.notEqual(strap.material, originals.get('Rubber'));
   assert.notEqual(strap.material.normalMap, originals.get('Rubber').normalMap);

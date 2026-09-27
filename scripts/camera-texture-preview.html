@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Camera texture inspection</title>
+<style>
+body{margin:0;background:#0b0d10;color:#e6e9eb;font:14px system-ui}header{position:absolute;z-index:1;padding:24px}h1{font-size:20px;margin:0 0 12px}button{background:#20262c;color:inherit;border:1px solid #4e5a66;border-radius:6px;padding:10px;margin:4px;cursor:pointer}button:focus-visible{outline:2px solid #83c3f0}p{color:#aeb9c2}canvas{display:block;width:100vw;height:100vh}
+</style>
+<header><h1>A well-used camera</h1><p>Fine scuffs and handling wear, baked in ScenePlane through Composio.</p><button id="side">Side view</button><button id="front">Lens view</button><button id="grip">Grip close-up</button><button id="normals">Normal maps: on</button><p id="status">Loading camera</p></header>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {applyCameraMaterials} from '../lib/camera-materials.ts';
+const scene=new THREE.Scene();scene.background=new THREE.Color('#0b0d10');
+const camera=new THREE.PerspectiveCamera(32,innerWidth/innerHeight,.01,100);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.setSize(innerWidth,innerHeight);
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;document.body.append(renderer.domElement);
+const generator=new THREE.PMREMGenerator(renderer);const room=new RoomEnvironment();const environment=generator.fromScene(room,.04);scene.environment=environment.texture;scene.environmentIntensity=.75;room.dispose();generator.dispose();
+for(const [color,power,position] of [['#ffffff',3.2,[-3,5,4]],['#cde4ff',1.4,[4,1,2]],['#659fd5',2.8,[-2,2,-4]]]){const light=new THREE.DirectionalLight(color,power);light.position.set(...position);scene.add(light)}
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=false;
+const draw=()=>renderer.render(scene,camera);controls.addEventListener('change',draw);
+function view(front=false){camera.position.set(...(front?[0,.35,7]:[5,2,6]));controls.target.set(0,0,0);controls.update();draw()}
+document.querySelector('#side').onclick=()=>view();document.querySelector('#front').onclick=()=>view(true);
+const gltf=await new GLTFLoader().loadAsync('/models/panasonic-hmc150.glb');const root=gltf.scene;
+applyCameraMaterials(root,renderer.capabilities.getMaxAnisotropy());
+const box=new THREE.Box3().setFromObject(root),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());const scale=3.8/Math.max(size.x,size.y,size.z);root.scale.multiplyScalar(scale);root.position.sub(center.multiplyScalar(scale));scene.add(root);
+document.querySelector('#grip').onclick=()=>{const target=new THREE.Box3().setFromObject(root.getObjectByName('HMC_FocusRing')).getCenter(new THREE.Vector3());controls.target.copy(target);camera.position.copy(target).add(new THREE.Vector3(2.4,1.2,1.5));controls.update();draw()};
+const normals=new Map();root.traverse(o=>{if(o.isMesh)for(const m of Array.isArray(o.material)?o.material:[o.material])if(m.normalMap)normals.set(m,m.normalMap)});
+let enabled=true;document.querySelector('#normals').onclick=()=>{enabled=!enabled;for(const [m,map] of normals){m.normalMap=enabled?map:null;m.needsUpdate=true}document.querySelector('#normals').textContent=`Normal maps: ${enabled?'on':'off'}`;draw()};
+view();document.querySelector('#status').textContent=`${renderer.info.render.triangles.toLocaleString()} triangles`;
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);draw()});
+</script>
+</html>
