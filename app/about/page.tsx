@@ -5,6 +5,7 @@ import Photo from '@/components/photo';
 import InstagramFeed from '@/components/instagram-feed';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/about' },
   title: 'About Me | Arthur Khitrik',
   description: 'Arthur Khitrik, a videographer and editor from the skateboarding world. Photos from the sessions, events and the latest from Instagram.',
 };
