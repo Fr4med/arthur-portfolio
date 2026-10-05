@@ -9,7 +9,7 @@ import {Button} from '@/components/ui/button';
 const sitekey = '0x4AAAAAAFEVITTndnsqiXrF';
 const scriptUrl = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 type Turnstile = {
-  render: (element: HTMLElement, options: {sitekey: string; action: string; callback: (token: string) => void; 'expired-callback': () => void; 'error-callback': () => void}) => string;
+  render: (element: HTMLElement, options: {sitekey: string; action: string; theme: 'dark'; callback: (token: string) => void; 'expired-callback': () => void; 'error-callback': () => void}) => string;
   reset: (widgetId: string) => void;
   remove: (widgetId: string) => void;
 };
@@ -28,7 +28,7 @@ export default function Contact({email}: {email: string}) {
     function renderChallenge() {
       if (cancelled || !challengeContainer.current || widgetId.current || !window.turnstile) return;
       widgetId.current = window.turnstile.render(challengeContainer.current, {
-        sitekey, action: 'contact',
+        sitekey, action: 'contact', theme: 'dark',
         callback: setTurnstileToken,
         'expired-callback': () => setTurnstileToken(''),
         'error-callback': () => {setTurnstileToken(''); setStatus('Security check could not load. Please refresh the page or email Arthur directly.');},
