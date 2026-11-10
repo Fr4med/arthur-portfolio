@@ -1,0 +1,99 @@
+.theme {
+  --project-heading: #876b61;
+  --brand-blue: #95796f;
+  --brand-blue-dark: #4a3730;
+  --brand-blue-light: #b39a90;
+  --brand-blue-shadow: #30221d;
+  --primary: var(--brand-blue);
+  --primary-foreground: #0b0d10;
+}
+
+.theme .page :global(h2),
+.theme :global(.contact-heading h2) {
+  color: var(--project-heading);
+}
+
+.page .title {
+  margin: 28px 0 25px;
+  font-family: var(--font-sesh), sans-serif;
+  font-weight: 400;
+  font-size: clamp(62px, 7.3vw, 112px);
+  line-height: .97;
+  letter-spacing: -.035em;
+  color: var(--project-heading);
+}
+
+.name {
+  display: block;
+  padding: .08em 0;
+  transform: rotate(-4deg);
+  transform-origin: left center;
+  -webkit-text-stroke: .055em var(--brand-blue-dark);
+  paint-order: stroke fill;
+  text-shadow: .035em .055em 0 var(--brand-blue-shadow);
+  text-transform: uppercase;
+}
+
+.title .subtitle {
+  display: block;
+  margin-top: 28px;
+  font-size: clamp(20px, 2vw, 29px);
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--brand-blue-light);
+}
+
+.page .portrait {
+  width: 100%;
+  max-width: 450px;
+}
+
+.portrait img {
+  border: 9px solid var(--foreground);
+}
+
+.page .galleryHeading {
+  align-items: end;
+}
+
+.galleryIntro {
+  margin: 18px 0 0;
+  color: var(--muted-foreground);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.page .credit {
+  display: block;
+  max-width: 260px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.gallery figure:last-child {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 700px) {
+  .page .title {
+    font-size: clamp(52px, 16vw, 100px);
+  }
+
+  .title .subtitle {
+    margin-top: 22px;
+    font-size: 22px;
+  }
+
+  .page .portrait {
+    width: 94%;
+    margin-block: 15px;
+  }
+
+  .page .galleryHeading {
+    display: block;
+  }
+
+  .page .credit {
+    margin-top: 16px;
+  }
+}
