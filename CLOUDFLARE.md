@@ -2,7 +2,7 @@
 
 The `cloudflare-workers-preview` branch deploys the Arthur portfolio to the `arthur-portfolio-preview` Worker. Workers Builds watches this branch in `Fr4med/arthur-portfolio`. Both `arthurkhitrik.com` and `www.arthurkhitrik.com` are attached as Worker custom domains. Render remains available as a rollback target. The old `arthur-portfolio-keepalive` Worker has no cron schedules.
 
-The five content pages are generated as HTML during `npm run build` and served from Cloudflare Static Assets without invoking Worker code. The small `worker/index.ts` script handles `/api/contact`, `/health`, and the permanent `/shaba-sesh` redirect. This avoids the 10 ms CPU limit risk observed with server-rendering every page on Workers Free. Unknown paths use the generated `404.html`.
+The content pages are generated as HTML during `npm run build` and served from Cloudflare Static Assets without invoking Worker code. The small `worker/index.ts` script handles `/api/contact`, `/health`, and the permanent `/shaba-sesh` redirect. This avoids the 10 ms CPU limit risk observed with server-rendering every page on Workers Free. Unknown paths use the generated `404.html`.
 
 | Build setting | Command |
 | --- | --- |

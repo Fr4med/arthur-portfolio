@@ -1,5 +1,7 @@
 # Content updates
 
+The [Evyatar Tahar welcome part](https://arthurkhitrik.com/evyatar-tahar-rvca-il) uses a brown text palette and embeds RVCA IL's film `qebe1pawd4Q`. The blog links to the project page, and the film opens from the first card in Selected Works. Premiere photos 25 through 32 are by David doh doh Rosen.
+
 The site uses the SHABBAT SESH blue, #659fd5, as its shared accent. Brand colors are defined in app/globals.css and apply to every route, contact/social sections and interaction states. The favicon uses the same blue. Cool charcoal backgrounds support the palette; the paper artwork retains its original colors. The original opening section is restored from pre-threejs-redesign: the two-column introduction, paper film cover, FILM IT. sticker and film links. The header is at the top, and the scroll-driven Three.js animation shares the opening section with the original content. From the angled, lens-forward camera pose, the headline and film card ease into view over a longer stretch of scroll on the same charcoal background.
 
 The blog index reads `lib/posts.ts`. Add an entry with a unique slug, title, category, image ID, alt text, excerpt and an existing article URL. Create the matching page under `app/blog/<slug>/page.tsx` and give it its own metadata. The SHABBAT SESH feature is listed in the blog and lives at `/shabbat-sesh`.

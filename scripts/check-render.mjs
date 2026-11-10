@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 const base = process.argv[2] || 'http://127.0.0.1:4175';
-const routes = ['/', '/about', '/blog', '/blog/behind-the-camera', '/shabbat-sesh'];
+const routes = ['/', '/about', '/blog', '/blog/behind-the-camera', '/shabbat-sesh', '/evyatar-tahar-rvca-il'];
 const assets = new Set();
 const health = await fetch(new URL('/health', base));
 assert.equal(health.status, 200);
@@ -26,4 +26,4 @@ for (const asset of assets) {
   assert.equal(response.status, 200, asset);
   assert.doesNotMatch(response.headers.get('content-type') || '', /text\/html/, asset);
 }
-console.log(`Passed: 5 pages, permanent redirect, missing-page 404, ${assets.size} linked assets.`);
+console.log(`Passed: ${routes.length} pages, permanent redirect, missing-page 404, ${assets.size} linked assets.`);
