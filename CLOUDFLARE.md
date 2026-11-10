@@ -4,6 +4,8 @@ The `cloudflare-workers-preview` branch deploys the Arthur portfolio to the `art
 
 The content pages are generated as HTML during `npm run build` and served from Cloudflare Static Assets without invoking Worker code. The small `worker/index.ts` script handles `/api/contact`, `/health`, and the permanent `/shaba-sesh` redirect. This avoids the 10 ms CPU limit risk observed with server-rendering every page on Workers Free. Unknown paths use the generated `404.html`.
 
+Play Outside uses two static exports. The Worker serves the scheduled or released export at `/daniel-torneo-play-outside` according to `PLAY_OUTSIDE_RELEASE_AT` in `lib/play-outside.ts`. The public response uses `Cache-Control: no-store` so a later visit can receive the released page and its share metadata. An open page also switches when its countdown reaches zero. The Worker returns 404 for direct requests to the internal release assets. Keep review routes and controls in the private preview checkout.
+
 | Build setting | Command |
 | --- | --- |
 | Build | `npm run build` |

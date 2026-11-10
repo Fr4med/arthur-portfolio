@@ -9,7 +9,12 @@
     "not_found_handling": "404-page",
     "html_handling": "drop-trailing-slash",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*", "/health", "/shaba-sesh", "/shaba-sesh/*"]
+    "run_worker_first": [
+      "/api/*", "/health", "/shaba-sesh", "/shaba-sesh/*",
+      "/daniel-torneo-play-outside", "/daniel-torneo-play-outside/*",
+      "/daniel-torneo-play-outside.html", "/daniel-torneo-play-outside.txt",
+      "/play-outside-release", "/play-outside-release/*"
+    ]
   },
   "observability": {"enabled": true}
 }

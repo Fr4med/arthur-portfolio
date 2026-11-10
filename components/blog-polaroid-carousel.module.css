@@ -1,0 +1,100 @@
+.carousel { min-width: 0; }
+.carousel:focus-visible { outline: 2px solid var(--primary); outline-offset: 24px; }
+.stage { position: relative; padding: 20px 0; }
+.back {
+  position: absolute;
+  inset: 8px -8px 16px 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 14px;
+  background: #b89f79;
+  color: #211e19;
+  font: 10px var(--font-geist-mono), monospace;
+  transform: rotate(6deg);
+  box-shadow: 0 8px 22px #0006;
+}
+.viewport {
+  position: relative;
+  margin: -48px -36px;
+  padding: 48px 36px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+}
+.track { display: flex; gap: 56px; touch-action: pan-y pinch-zoom; }
+.slide { flex: 0 0 100%; min-width: 0; }
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(12px, 1.4vw, 18px);
+  background: #e4e3d8;
+  color: #171915;
+  transform: translate3d(0, calc(var(--slide-distance, 0) * 12px), 0) rotate(calc(-5deg + var(--slide-offset, 0) * 8deg)) scale(calc(1 - var(--slide-distance, 0) * .07));
+  transform-origin: center;
+  opacity: calc(1 - var(--slide-distance, 0) * .8);
+  filter: blur(calc(var(--slide-distance, 0) * 5px));
+  backface-visibility: hidden;
+  box-shadow: 0 10px 30px #0007;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.card:focus-visible { outline-color: var(--brand-blue-dark); outline-offset: 5px; }
+.tape { pointer-events: none; }
+.top, .bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+  font: 10px/1.5 var(--font-geist-mono), monospace;
+  text-transform: uppercase;
+}
+.top { margin-bottom: 12px; }
+.top > span:last-child { text-align: right; }
+.image { aspect-ratio: 1.55; background: #202832; overflow: hidden; }
+.image img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.caption { position: relative; display: flex; align-items: end; gap: 12px; min-width: 0; padding: 17px 0 14px; }
+.title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-display), Impact, sans-serif;
+  font-size: clamp(42px, 5.7vw, 86px);
+  line-height: .95;
+  letter-spacing: -1.5px;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.longTitle { font-size: clamp(33px, 4.5vw, 68px); line-height: 1.2; }
+.visit { flex: 0 0 auto; width: 44px; height: 44px; margin-bottom: 4px; stroke-width: 2.5; transition: transform .25s ease; }
+.bottom { border-top: 1px solid #6b6d61; padding-top: 10px; }
+.sticker { z-index: 2; left: -30px; bottom: -8px; pointer-events: auto; }
+.controls { position: relative; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 22px; }
+.controls button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--border); background: var(--background); color: var(--foreground); transition: border-color .2s, color .2s; }
+.controls button:hover { color: var(--primary); border-color: var(--primary); }
+.controls > button { flex: none; }
+.dots { display: flex; min-width: 0; flex-wrap: wrap; justify-content: center; }
+.dots button { border: 0; background: transparent; }
+.dots button > span { width: 6px; height: 6px; border-radius: 50%; background: var(--muted-foreground); transition: width .2s, background .2s; }
+.dots button[aria-current] > span { width: 22px; border-radius: 4px; background: var(--primary); }
+.status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (hover: hover) and (pointer: fine) {
+  .card:hover .visit { transform: translate(3px, -3px); }
+}
+@media (max-width: 700px) {
+  .title { font-size: clamp(36px, 10.8vw, 68px); }
+  .longTitle { font-size: clamp(28px, 8.5vw, 53px); }
+  .top, .bottom { font-size: 9px; gap: 8px; }
+  .top { min-height: 27px; margin-bottom: 8px; }
+  .caption { padding-top: 14px; }
+  .visit { width: 30px; height: 30px; }
+  .sticker { left: -22px; bottom: -8px; padding: 8px 12px; font-size: 20px; }
+  .sticker span { font-size: 10px; margin-top: 6px; }
+  .controls { gap: 4px; margin-top: 18px; }
+  .dots button { width: 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card, .visit, .controls button, .dots button > span { transition: none; }
+  .card { transform: rotate(-5deg); opacity: 1; filter: none; }
+  .card:hover .visit { transform: none; }
+}

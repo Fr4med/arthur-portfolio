@@ -1,0 +1,42 @@
+.logo {
+  position: relative;
+  display: block;
+}
+
+.still {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.layers,
+.lettering,
+.figures {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.layers { display: none; }
+
+.figures {
+  background-repeat: no-repeat;
+  background-size: 800% 100%;
+  background-position: 0% 0%;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .logo[data-ready='true'] .still { opacity: 0; }
+  .logo[data-ready='true'] .layers { display: block; }
+
+  .logo:hover .figures {
+    animation: body-roll 1.248s steps(8, jump-none) infinite;
+  }
+}
+
+@keyframes body-roll {
+  from { background-position-x: 0%; }
+  to { background-position-x: 100%; }
+}

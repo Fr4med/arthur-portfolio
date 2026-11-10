@@ -190,5 +190,12 @@
     "source": "IMG_4850.JPEG",
     "width": 1600,
     "height": 1067
+  },
+  {
+    "id": 33,
+    "source": "IMG_3888.PNG",
+    "width": 1600,
+    "height": 1262,
+    "stem": "/films/play-outside/steps"
   }
 ]

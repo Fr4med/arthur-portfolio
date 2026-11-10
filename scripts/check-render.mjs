@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 const base = process.argv[2] || 'http://127.0.0.1:4175';
-const routes = ['/', '/about', '/blog', '/blog/behind-the-camera', '/shabbat-sesh', '/evyatar-tahar-rvca-il'];
+const routes = ['/', '/about', '/blog', '/blog/behind-the-camera', '/shabbat-sesh', '/evyatar-tahar-rvca-il', '/daniel-torneo-play-outside'];
 const assets = new Set();
 const health = await fetch(new URL('/health', base));
 assert.equal(health.status, 200);

@@ -4,6 +4,7 @@ import SiteHeader from '@/components/site-header';
 import SiteFooter from '@/components/site-footer';
 import Photo from '@/components/photo';
 import CameraScrollIntro from '@/components/camera-scroll-intro';
+import BlogPolaroidCarousel from '@/components/blog-polaroid-carousel';
 import { ArrowDown, ArrowUpRight, Play } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 type Film = { id: string; title: string; subtitle: string; category: string; poster?: string };
@@ -23,8 +24,8 @@ const film=films.find(item=>item.id===active);
 return <><a className="skip-link" href="#work">Skip to films</a>
 <div className="home-header" id="home-navigation"><SiteHeader/></div>
 <main id="top"><CameraScrollIntro><section className="hero" aria-labelledby="hero-title"><div className="hero-copy"><p className="eyebrow"><span className="record-dot"/> BEHIND THE LENS. IN THE EDIT.</p><h1 id="hero-title">ARTHUR<br/><span>KHITRIK.</span></h1><p className="hero-description">Skateboarding. People. Places.<br/>Films from the streets, made to be felt.</p><a className="work-link" href="#work">TAKE A LOOK <ArrowDown size={18}/></a></div>
-<div className="hero-art"><div className="paper-back" aria-hidden="true"><span>FIELD NOTES / 001</span><span>KEEP ROLLING.</span></div><button className="hero-cover" onClick={()=>setActive('-T_E8705WKM')} aria-label="Play SHABBAT SESH"><span className="tape" aria-hidden="true"/><span className="cover-top"><span>AN ARTHUR KHITRIK FILM</span><span>▶ REC</span></span><span className="hero-image"><img src="https://i.ytimg.com/vi/-T_E8705WKM/hqdefault.jpg" alt="SHABBAT SESH skate film cover" fetchPriority="high"/><span className="cover-play"><Play fill="currentColor" size={24}/></span></span><span className="cover-title">SHABBAT<br/>SESH<span>↗</span></span><span className="cover-bottom"><span>SKATEBOARDING / FILM / FRIENDS</span><span>01</span></span></button><div className="film-sticker" aria-hidden="true">FILM IT.<span>AK © 2026</span></div></div>
-<a className="feature-story-link" href="/shabbat-sesh">THE SHABBAT SESH STORY ↗</a><div className="hero-footer"><span>INDEPENDENT FILMMAKING</span><span>SCROLL FOR THE GOOD STUFF <ArrowDown size={14}/></span></div></section></CameraScrollIntro>
+<BlogPolaroidCarousel />
+<a className="feature-story-link" href="/blog">MORE FROM THE BLOG ↗</a><div className="hero-footer"><span>INDEPENDENT FILMMAKING</span><span>SCROLL FOR THE GOOD STUFF <ArrowDown size={14}/></span></div></section></CameraScrollIntro>
 <section id="work" className="work-section" aria-labelledby="work-title">
   <div className="section-heading">
     <div>
