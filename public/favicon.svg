@@ -1,1 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#0b0d10"/><text x="6" y="45" font-family="Arial,sans-serif" font-size="35" font-weight="900" letter-spacing="-3" fill="#659fd5">AK</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#0b0d10"/>
+  <g fill="#eae9df" transform="translate(7 52) scale(0.023 -0.023)">
+    <path transform="translate(0.000 0)" d="M30 0 200 1760H797L964 0H631L606 284H394L372 0ZM419 565H579L502 1460H486Z"/>
+    <path transform="translate(880.222 0)" d="M78 0V1760H426V1055L590 1760H944L747 954L985 0H620L428 852V0Z"/>
+  </g>
+  <circle cx="55" cy="49" r="3.5" fill="#659fd5"/>
+</svg>
