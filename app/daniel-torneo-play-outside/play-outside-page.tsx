@@ -127,8 +127,10 @@ export default function PlayOutsidePage({ initialNow }: { initialNow: number }) 
       <section className={`premiere-section ${styles.photoSection}`} aria-labelledby="photos-title">
         <div className="section-heading">
           <div><p className="eyebrow">PLAY OUTSIDE</p><h2 id="photos-title">FROM THE SESSIONS.</h2></div>
-          <p className={styles.photoNote}>A walk up the steps with a board, three skaters rolling down a concrete path, and a pause by the street. These prints catch the moments around Daniel Torneo’s skate part.</p>
         </div>
+        <p className={styles.photoNote}>
+          We had to make the most of the time before Santo left for his big trip. That’s how this short part for RVCA IL came to life, filmed over two and a half months as we wandered through various kibbutzim and back roads where we never expected to find any spots at all. But Santo’s passion for skateboarding always prevailed; somehow, he always found a way to skate anything, anywhere. It was a pleasure to be part of this project for my dear friends.
+        </p>
         <div className={styles.gallery}>
           {photos.map(photo => <figure key={photo.name}><Print {...photo} /></figure>)}
         </div>

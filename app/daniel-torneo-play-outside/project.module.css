@@ -79,7 +79,8 @@
 .releasedFilm :global(.youtube-player) { min-height: 200px; }
 
 .page .photoSection { padding-top: 80px; padding-bottom: 30px; }
-.page .photoNote { max-width: 360px; font-size: 14px; color: var(--muted-foreground); }
+.photoSection :global(.section-heading) { margin-bottom: 16px; }
+.page .photoNote { max-width: 68ch; margin: 0 0 30px; font-size: 16px; line-height: 1.75; color: var(--muted-foreground); }
 .gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
 .gallery figure { margin: 0; }
 .gallery img { display: block; width: 100%; height: auto; }
@@ -109,8 +110,8 @@
   .releaseNote span { font-size: 11px; }
   .coverCaption { bottom: 11px; left: 12px; font-size: 11px; }
   .page .photoSection { padding-top: 50px; }
-  .photoSection :global(.section-heading) { display: block; margin-bottom: 28px; }
-  .page .photoNote { display: block; max-width: none; margin-top: 16px; }
+  .photoSection :global(.section-heading) { display: block; }
+  .page .photoNote { margin-bottom: 24px; }
   .gallery { grid-template-columns: 1fr; gap: 22px; }
 }
 
