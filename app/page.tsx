@@ -11,12 +11,12 @@ type Film = { id: string; title: string; subtitle: string; category: string; pos
 // Add new videos at the top; preserve the existing videos' relative order.
 const films: Film[] = [
 { id:'qebe1pawd4Q',title:'EVYATAR TAHAR',subtitle:'Welcome part - RVCA IL',category:'Welcome part'},
-{ id:'-T_E8705WKM',title:'SHABBAT SESH',subtitle:'A skate video by Arthur Khitrik',category:'Skate film'},
 { id:'a_6WP38cPLs',title:'H-TOWN ADVENTURES',subtitle:'RVCA Israel',category:'On the road',poster:'/photos/06-1600.webp'},
-{ id:'J6dvfCfBzL4',title:'EVYATAR TAHAR',subtitle:'Welcome to Spicy Grips',category:'Welcome part'},
+{ id:'-T_E8705WKM',title:'SHABBAT SESH',subtitle:'A skate video by Arthur Khitrik',category:'Skate film'},
 { id:'3P2LnFrUu0U',title:'N9 IN PARIS',subtitle:'N9 trip to Paris, 2025',category:'On the road'},
 { id:'RMm_e1s54A8',title:'GO SKATE DAY',subtitle:"Tel Aviv, 2026 · Gili's Skate Shop",category:'Skate film'},
-{ id:'_tyHrUSh6GI',title:'JIN-G DROPS',subtitle:'Ramat Hachayal Skatepark',category:'Skate film'}];
+{ id:'_tyHrUSh6GI',title:'JIN-G DROPS',subtitle:'Ramat Hachayal Skatepark',category:'Skate film'},
+{ id:'J6dvfCfBzL4',title:'EVYATAR TAHAR',subtitle:'Welcome to Spicy Grips',category:'Welcome part'}];
 export default function Home(){
 const filmTitleRef=useRef<HTMLHeadingElement>(null);
 const [active,setActive]=useState<string|null>(null);
