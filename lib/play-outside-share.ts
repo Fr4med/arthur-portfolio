@@ -26,6 +26,12 @@ export function getFacebookShareUrl() {
   return url.toString();
 }
 
+export function getWhatsAppShareUrl() {
+  const url = new URL('https://wa.me/');
+  url.searchParams.set('text', PLAY_OUTSIDE_PUBLIC_URL);
+  return url.toString();
+}
+
 export function getPlayOutsideMetadata(released: boolean): Metadata {
   const share = getPlayOutsideShare(released);
   return {

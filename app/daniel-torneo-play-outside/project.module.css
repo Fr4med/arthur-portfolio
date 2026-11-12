@@ -30,6 +30,7 @@
   padding-top: 64px;
   padding-bottom: 48px;
   grid-template-columns: 1fr .8fr;
+  align-items: start;
   gap: 7%;
 }
 
@@ -57,7 +58,13 @@
 .releaseStatus { color: var(--brand-blue-light); }
 .releaseStatus::before { content: ''; display: inline-block; width: 6px; height: 6px; margin: 0 9px 2px 0; border-radius: 50%; background: currentColor; }
 .page .watchLink { display: inline-flex; align-items: center; gap: 10px; margin-top: 20px; min-height: 44px; font-size: 13px; }
-.page .portrait { width: 100%; max-width: 440px; margin-block: 24px; transform: rotate(3deg); }
+.heroPhoto {
+  width: 100%;
+  max-width: 440px;
+  justify-self: center;
+  margin-top: clamp(32px, 5vw, 64px);
+}
+.page .portrait { width: 100%; max-width: none; }
 .portrait img { display: block; }
 .portrait figcaption { margin-top: 18px; font-size: 11px; }
 
@@ -97,7 +104,7 @@
   .page .hero { grid-template-columns: 1fr; gap: 27px; padding: 40px 7% 20px; }
   .page .title { margin-block: 20px 28px; }
   .page .skater { font-size: 17px; }
-  .page .portrait { width: 90%; max-width: 390px; margin: 8px auto 20px; }
+  .heroPhoto { width: 90%; max-width: 390px; margin: 8px auto 20px; }
   .page .watchLink { font-size: 12px; margin-top: 16px; }
   .page .countdownFilm { margin-top: 18px; }
   .filmCover { aspect-ratio: 4/3; min-height: 228px; }

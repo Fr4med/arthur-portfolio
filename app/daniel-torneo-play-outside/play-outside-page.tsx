@@ -5,7 +5,7 @@ import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import SiteHeader from '@/components/site-header';
 import SiteFooter from '@/components/site-footer';
 import FeatureFilm from '@/components/feature-film';
-import PlayOutsideShare from '@/components/play-outside-share';
+import PlayOutsideShare, { usePlayOutsideSharePoster } from '@/components/play-outside-share';
 import PlayOutsideBodyRoll from '@/components/play-outside-body-roll';
 import {
   getPlayOutsideRelease,
@@ -41,6 +41,7 @@ export default function PlayOutsidePage({ initialNow }: { initialNow: number }) 
   const [now, setNow] = useState(initialNow);
   const time = getPlayOutsideRelease(now);
   const { released } = time;
+  const sharePoster = usePlayOutsideSharePoster(released);
 
   useEffect(() => {
     if (initialNow >= PLAY_OUTSIDE_RELEASE_AT) return;
@@ -85,10 +86,13 @@ export default function PlayOutsidePage({ initialNow }: { initialNow: number }) 
             {released ? 'WATCH THE FILM' : 'COUNTING DOWN TO THE FULL PART'}<ArrowDown size={16} aria-hidden="true" />
           </a>
         </div>
-        <figure className={`sesh-poster ${styles.portrait}`}>
-          <Print name="car" width={1280} height={1006} alt="A person at the wheel of a car, with open countryside outside the window" priority />
-          <figcaption>PLAY OUTSIDE / PHOTO NOTES</figcaption>
-        </figure>
+        <div className={styles.heroPhoto}>
+          <figure className={`sesh-poster ${styles.portrait}`}>
+            <Print name="car" width={1280} height={1006} alt="A person at the wheel of a car, with open countryside outside the window" priority />
+            <figcaption>PLAY OUTSIDE / PHOTO NOTES</figcaption>
+          </figure>
+          <PlayOutsideShare released={released} poster={sharePoster} compact />
+        </div>
       </section>
 
       <section className={styles.filmSection} aria-label={released ? 'Watch Play Outside' : 'Play Outside release countdown'}>
@@ -122,7 +126,7 @@ export default function PlayOutsidePage({ initialNow }: { initialNow: number }) 
         </div>}
       </section>
 
-      <PlayOutsideShare released={released} />
+      <PlayOutsideShare released={released} poster={sharePoster} />
 
       <section className={`premiere-section ${styles.photoSection}`} aria-labelledby="photos-title">
         <div className="section-heading">
@@ -141,6 +145,6 @@ export default function PlayOutsidePage({ initialNow }: { initialNow: number }) 
         <h2>SHABBAT SESH <ArrowUpRight aria-hidden="true" /></h2>
       </a>
     </main>
-    <SiteFooter share={<PlayOutsideShare released={released} compact />} />
+    <SiteFooter />
   </div>;
 }
