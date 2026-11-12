@@ -32,12 +32,20 @@ function AppIcon({ name }: { name: AppName }) {
 
 type SharePoster = { pending: boolean; file: File | null };
 
+function canUseMobileShare() {
+  if (typeof navigator.share !== 'function' || navigator.platform.startsWith('Win')) return false;
+
+  // iPadOS can identify itself as a Mac when requesting the desktop site.
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
 export function usePlayOutsideSharePoster(released: boolean): SharePoster {
   const { story, phase } = getPlayOutsideShare(released);
   const [poster, setPoster] = useState<{ source: string; file: File | null } | null>(null);
 
   useEffect(() => {
-    if (typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function') {
+    if (!canUseMobileShare() || typeof navigator.canShare !== 'function') {
       setPoster({ source: story, file: null });
       return;
     }
@@ -89,7 +97,7 @@ export default function PlayOutsideShare({ released, poster, compact = false }: 
 
   async function openDeviceShare() {
     if (sharing.current) return;
-    if (typeof navigator.share !== 'function') {
+    if (!canUseMobileShare()) {
       setExpanded(true);
       return;
     }
