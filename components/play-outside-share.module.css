@@ -27,15 +27,8 @@
 }
 
 .sharePage svg { color: var(--primary); }
-.sharePage:hover:not(:disabled) { color: var(--brand-blue-light); }
+button.sharePage:hover:not(:disabled) { color: var(--brand-blue-light); }
 .platforms { display: flex; flex-wrap: wrap; gap: 8px; margin-inline-start: auto; }
-
-.trigger, .appLink {
-  border: 1px solid var(--border);
-  color: #edd5df;
-  background: transparent;
-  transition: color 150ms ease-out, background 150ms ease-out, border-color 150ms ease-out;
-}
 
 .trigger {
   display: grid;
@@ -44,42 +37,26 @@
   width: 44px;
   height: 44px;
   padding: 0;
+  border: 1px solid var(--border);
   border-radius: 50%;
+  color: #edd5df;
+  background: transparent;
+  transition: color 150ms ease-out, background 150ms ease-out, border-color 150ms ease-out;
 }
 
-.trigger:hover:not(:disabled), .appLink:hover {
+.trigger:hover:not(:disabled) {
   background: #3b1d29;
   color: var(--brand-blue-light);
   border-color: #aa536d;
 }
 
-.trigger:active:not(:disabled), .appLink:active { background: #562536; }
-.sharePage:disabled, .trigger:disabled { opacity: .55; cursor: wait; }
+.trigger:active:not(:disabled) { background: #562536; }
+.trigger:disabled { opacity: .55; cursor: not-allowed; }
+.sharePage:disabled, .trigger[aria-busy="true"] { opacity: .55; cursor: wait; }
 
-.sharePage:focus-visible, .trigger:focus-visible, .appLink:focus-visible {
+.sharePage:focus-visible, .trigger:focus-visible {
   outline: 2px solid var(--brand-blue-light);
   outline-offset: 3px;
-}
-
-.appMenu {
-  width: fit-content;
-  max-width: 100%;
-  margin: 12px auto 0;
-  padding: 8px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #1a1117;
-}
-
-.apps { display: flex; flex-wrap: wrap; gap: 8px; }
-.appLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  padding-inline: 11px;
-  border-radius: 6px;
-  font-size: 13px;
 }
 
 .compact { margin: 24px 0 0; max-width: 500px; }
@@ -94,5 +71,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .trigger, .appLink { transition: none; }
+  .trigger { transition: none; }
 }

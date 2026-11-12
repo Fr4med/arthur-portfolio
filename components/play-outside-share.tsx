@@ -1,6 +1,6 @@
 'use client';
 
-import { type MouseEvent, useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Share2 } from 'lucide-react';
 import { getFacebookShareUrl, getPlayOutsideShare, getWhatsAppShareUrl } from '@/lib/play-outside-share';
 import styles from './play-outside-share.module.css';
@@ -19,10 +19,10 @@ const appIcons = {
 type AppName = keyof typeof appIcons;
 const apps = Object.keys(appIcons) as AppName[];
 
-const appLinks = [
-  { name: 'WhatsApp', href: getWhatsAppShareUrl() },
-  { name: 'Facebook', href: getFacebookShareUrl() },
-] as const;
+const appLinks: Partial<Record<AppName, string>> = {
+  WhatsApp: getWhatsAppShareUrl(),
+  Facebook: getFacebookShareUrl(),
+};
 
 function AppIcon({ name }: { name: AppName }) {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
@@ -30,7 +30,7 @@ function AppIcon({ name }: { name: AppName }) {
   </svg>;
 }
 
-type SharePoster = { pending: boolean; file: File | null };
+type SharePoster = { deviceShare: boolean; pending: boolean; file: File | null };
 
 function canUseMobileShare() {
   if (typeof navigator.share !== 'function' || navigator.platform.startsWith('Win')) return false;
@@ -42,17 +42,22 @@ function canUseMobileShare() {
 
 export function usePlayOutsideSharePoster(released: boolean): SharePoster {
   const { story, phase } = getPlayOutsideShare(released);
-  const [poster, setPoster] = useState<{ source: string; file: File | null } | null>(null);
+  const [poster, setPoster] = useState<{ source: string; pending: boolean; file: File | null } | null>(null);
 
   useEffect(() => {
-    if (!canUseMobileShare() || typeof navigator.canShare !== 'function') {
-      setPoster({ source: story, file: null });
+    if (!canUseMobileShare()) {
+      setPoster(null);
+      return;
+    }
+    if (typeof navigator.canShare !== 'function') {
+      setPoster({ source: story, pending: false, file: null });
       return;
     }
 
     // Prepare the file before the click so the browser can open its share menu within that gesture.
+    setPoster({ source: story, pending: true, file: null });
     const controller = new AbortController();
-    const linkFallback = window.setTimeout(() => setPoster({ source: story, file: null }), 4000);
+    const linkFallback = window.setTimeout(() => setPoster({ source: story, pending: false, file: null }), 4000);
 
     async function loadPoster() {
       let file: File | null = null;
@@ -68,7 +73,7 @@ export function usePlayOutsideSharePoster(released: boolean): SharePoster {
         // The share action can still send the film link if the artwork is unavailable.
       } finally {
         window.clearTimeout(linkFallback);
-        if (!controller.signal.aborted) setPoster({ source: story, file });
+        if (!controller.signal.aborted) setPoster({ source: story, pending: false, file });
       }
     }
 
@@ -79,9 +84,11 @@ export function usePlayOutsideSharePoster(released: boolean): SharePoster {
     };
   }, [story, phase]);
 
-  return poster?.source === story
-    ? { pending: false, file: poster.file }
-    : { pending: true, file: null };
+  return {
+    deviceShare: poster !== null,
+    pending: poster !== null && (poster.source !== story || poster.pending),
+    file: poster?.source === story ? poster.file : null,
+  };
 }
 
 export default function PlayOutsideShare({ released, poster, compact = false }: {
@@ -89,18 +96,13 @@ export default function PlayOutsideShare({ released, poster, compact = false }: 
   poster: SharePoster;
   compact?: boolean;
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const panelId = useId();
-  const trigger = useRef<HTMLButtonElement>(null);
+  const [deviceShareFailed, setDeviceShareFailed] = useState(false);
+  const usesDeviceShare = poster.deviceShare && !deviceShareFailed;
   const sharing = useRef(false);
   const share = getPlayOutsideShare(released);
 
   async function openDeviceShare() {
     if (sharing.current) return;
-    if (!canUseMobileShare()) {
-      setExpanded(true);
-      return;
-    }
 
     sharing.current = true;
     try {
@@ -110,71 +112,65 @@ export default function PlayOutsideShare({ released, poster, compact = false }: 
         url: share.url,
         ...(poster.file ? { files: [poster.file] } : {}),
       });
-    } catch {
-      // Browsers may report AbortError for either dismissal or a missing share target.
-      setExpanded(true);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      setDeviceShareFailed(true);
     } finally {
       sharing.current = false;
     }
   }
 
-  function handleShare(event: MouseEvent<HTMLButtonElement>) {
-    trigger.current = event.currentTarget;
-    if (expanded) {
-      setExpanded(false);
-      return;
-    }
-    void openDeviceShare();
-  }
-
   const shareButtonProps = {
     type: 'button',
-    'aria-expanded': expanded,
-    'aria-controls': panelId,
     'aria-busy': poster.pending,
     disabled: poster.pending,
-    onClick: handleShare,
+    onClick: openDeviceShare,
   } as const;
+
+  const shareLabel = <><Share2 size={17} aria-hidden="true" />Share page</>;
 
   return <section
     className={`${styles.share} ${compact ? styles.compact : ''}`}
     aria-label="Share Play Outside"
-    onKeyDown={event => {
-      if (expanded && event.key === 'Escape') {
-        event.stopPropagation();
-        setExpanded(false);
-        trigger.current?.focus();
-      }
-    }}
   >
     <div className={styles.bar}>
-      <button {...shareButtonProps} className={styles.sharePage}>
-        <Share2 size={17} aria-hidden="true" />Share page
-      </button>
+      {usesDeviceShare
+        ? <button {...shareButtonProps} className={styles.sharePage}>{shareLabel}</button>
+        : <span className={styles.sharePage}>{shareLabel}</span>}
       <div className={styles.platforms}>
-        {apps.map(app => <button
-          {...shareButtonProps}
-          key={app}
-          className={styles.trigger}
-          aria-label={`${app} share options`}
-          title={app}
-        >
-          <AppIcon name={app} />
-        </button>)}
-      </div>
-    </div>
-    <div id={panelId} className={styles.appMenu} hidden={!expanded}>
-      <div className={styles.apps}>
-        {appLinks.map(app => <a
-          key={app.name}
-          className={styles.appLink}
-          href={app.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`Share on ${app.name}`}
-        >
-          <AppIcon name={app.name} />{app.name}
-        </a>)}
+        {apps.map(app => {
+          const icon = <AppIcon name={app} />;
+          if (usesDeviceShare) {
+            return <button
+              {...shareButtonProps}
+              key={app}
+              className={styles.trigger}
+              aria-label={`${app} share options`}
+              title={app}
+            >{icon}</button>;
+          }
+          const href = appLinks[app];
+          if (href) {
+            return <a
+              key={app}
+              className={styles.trigger}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Share on ${app}`}
+              title={app}
+            >{icon}</a>;
+          }
+          const unavailable = `${app} sharing is unavailable in this browser`;
+          return <button
+            key={app}
+            type="button"
+            className={styles.trigger}
+            aria-label={unavailable}
+            title={unavailable}
+            disabled
+          >{icon}</button>;
+        })}
       </div>
     </div>
   </section>;
