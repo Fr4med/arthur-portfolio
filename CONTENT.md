@@ -1,10 +1,12 @@
 # Content updates
 
-The [Evyatar Tahar welcome part](https://arthurkhitrik.com/evyatar-tahar-rvca-il) uses a brown text palette and embeds RVCA IL's film `qebe1pawd4Q`. The blog links to the project page, and the film opens from the first card in Selected Works. Premiere photos 25 through 32 are by David doh doh Rosen.
+The [Evyatar Tahar welcome part](https://arthurkhitrik.com/evyatar-tahar-rvca-il) uses a brown text palette and embeds RVCA IL's film `qebe1pawd4Q`. The blog links to the project page, and the film opens from its card in Selected Works. Premiere photos 25 through 32 are by David doh doh Rosen.
 
 The site uses the SHABBAT SESH blue, #659fd5, as its shared accent. Brand colors are defined in app/globals.css and apply to every route, contact/social sections and interaction states. The favicon uses the same blue. Cool charcoal backgrounds support the palette; the paper artwork retains its original colors. The original opening section is restored from pre-threejs-redesign: the two-column introduction, paper film cover, FILM IT. sticker and film links. The header is at the top, and the scroll-driven Three.js animation shares the opening section with the original content. From the angled, lens-forward camera pose, the headline and film card ease into view over a longer stretch of scroll on the same charcoal background.
 
 Create the article route, then append its entry to `lib/posts.ts` with a unique slug, title, category, image ID, alt text, excerpt and URL. The blog index and homepage carousel both show the last entry first after the next site build. The carousel uses the entry’s title, photo and link. Set `coverTitle` or `coverCaption` when a card needs shorter wording. Film posts can link to an existing project page, as SHABBAT SESH and Play Outside do.
+
+Add new Selected Works films at the top of the list in `components/selected-works.tsx`. For a scheduled premiere, use the same video ID and release time as the film page. Deploy the entry before the premiere, and its card will appear at release time, including on an already-open homepage.
 
 Photos are stored as 640px and up-to-1600px WebP files in `public/photos`. `lib/photo-manifest.json` records their original filenames and final dimensions. Use the shared `Photo` component so the browser selects a suitable size. Originals remain in D:/website.
 
