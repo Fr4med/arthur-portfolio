@@ -1,6 +1,7 @@
 'use client';
 import {useEffect, useRef, useState} from 'react';
 import {Play,ArrowUpRight} from 'lucide-react';
+import {recordPortfolioEvent} from '@/lib/portfolio-analytics';
 
 type FeatureFilmProps = {
   videoId?: string;
@@ -31,11 +32,24 @@ export default function FeatureFilm({
       allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
       referrerPolicy="strict-origin-when-cross-origin"
       allowFullScreen
-    /> : <button className="feature-film-cover" onClick={() => setPlaying(true)} aria-label={`Play ${title}`}>
+    /> : <button
+      className="feature-film-cover"
+      onClick={() => {
+        recordPortfolioEvent({ name: 'film_opened', filmId: videoId });
+        setPlaying(true);
+      }}
+      aria-label={`Play ${title}`}
+    >
       <img src={posterSrc} alt={posterAlt} loading="lazy" />
       <span className="play-circle"><Play fill="currentColor" aria-hidden="true" /></span>
       <span className="feature-film-label">{label}</span>
     </button>}
-    <a className="youtube-fallback" href={`https://www.youtube.com/watch?v=${videoId}`} target="_blank" rel="noreferrer">Watch on YouTube <ArrowUpRight size={16} aria-hidden="true" /></a>
+    <a
+      className="youtube-fallback"
+      href={`https://www.youtube.com/watch?v=${videoId}`}
+      target="_blank"
+      rel="noreferrer"
+      onClick={() => recordPortfolioEvent({ name: 'youtube_clicked', filmId: videoId })}
+    >Watch on YouTube <ArrowUpRight size={16} aria-hidden="true" /></a>
   </div>;
 }

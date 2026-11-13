@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Share2 } from 'lucide-react';
 import { getFacebookShareUrl, getPlayOutsideShare, getWhatsAppShareUrl } from '@/lib/play-outside-share';
+import { recordPortfolioEvent } from '@/lib/portfolio-analytics';
 import styles from './play-outside-share.module.css';
 
 const appIcons = {
@@ -106,6 +107,7 @@ export default function PlayOutsideShare({ released, poster, compact = false }: 
 
     sharing.current = true;
     try {
+      recordPortfolioEvent({ name: 'share_opened', destination: 'device' });
       await navigator.share({
         title: share.title,
         text: share.description,
@@ -150,7 +152,7 @@ export default function PlayOutsideShare({ released, poster, compact = false }: 
             >{icon}</button>;
           }
           const href = appLinks[app];
-          if (href) {
+          if (href && (app === 'WhatsApp' || app === 'Facebook')) {
             return <a
               key={app}
               className={styles.trigger}
@@ -159,6 +161,7 @@ export default function PlayOutsideShare({ released, poster, compact = false }: 
               rel="noopener noreferrer"
               aria-label={`Share on ${app}`}
               title={app}
+              onClick={() => recordPortfolioEvent({ name: 'share_opened', destination: app })}
             >{icon}</a>;
           }
           const unavailable = `${app} sharing is unavailable in this browser`;

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, Play } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { PLAY_OUTSIDE_RELEASE_AT, PLAY_OUTSIDE_VIDEO_ID } from '@/lib/play-outside';
+import { recordPortfolioEvent } from '@/lib/portfolio-analytics';
 
 type Film = {
   id: string;
@@ -99,7 +100,10 @@ export default function SelectedWorks({ initialNow }: { initialNow: number }) {
                     className="film-trigger"
                     aria-label={`Play ${item.title}, ${item.subtitle}`}
                     aria-haspopup="dialog"
-                    onClick={() => setActive(item.id)}
+                    onClick={() => {
+                      recordPortfolioEvent({ name: 'film_opened', filmId: item.id });
+                      setActive(item.id);
+                    }}
                   >
                     {item.title}
                   </button>
@@ -129,7 +133,13 @@ export default function SelectedWorks({ initialNow }: { initialNow: number }) {
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           />
-          <a className="youtube-fallback" href={`https://www.youtube.com/watch?v=${film.id}`} target="_blank" rel="noreferrer">
+          <a
+            className="youtube-fallback"
+            href={`https://www.youtube.com/watch?v=${film.id}`}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => recordPortfolioEvent({ name: 'youtube_clicked', filmId: film.id })}
+          >
             Watch on YouTube <ArrowUpRight size={16} />
           </a>
         </>}

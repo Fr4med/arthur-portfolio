@@ -5,6 +5,7 @@ import {Field, FieldGroup, FieldLabel, FieldDescription} from '@/components/ui/f
 import {Input} from '@/components/ui/input';
 import {Textarea} from '@/components/ui/textarea';
 import {Button} from '@/components/ui/button';
+import {recordPortfolioEvent} from '@/lib/portfolio-analytics';
 
 const sitekey = '0x4AAAAAAFEVITTndnsqiXrF';
 const scriptUrl = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
@@ -63,6 +64,7 @@ export default function Contact({email}: {email: string}) {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Your message could not be sent. Please try again.');
+      recordPortfolioEvent({ name: 'enquiry_sent' });
       setStatus('Thanks! Your message has been sent. Arthur will reply to your email.');
       form.reset();
     } catch (error) {
