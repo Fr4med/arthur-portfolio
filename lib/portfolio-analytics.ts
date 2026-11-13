@@ -6,9 +6,13 @@ export type PortfolioEvent =
   | { name: 'share_opened'; destination: 'device' | 'Facebook' | 'WhatsApp' }
   | { name: 'enquiry_sent' };
 
-export const analyticsChoiceKey = 'arthur-analytics-choice-v1';
 const configuredToken = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
-export const analyticsEnabled = /^phc_[A-Za-z0-9_-]{10,}$/.test(configuredToken ?? '');
+const configuredGtmId = process.env.NEXT_PUBLIC_GTM_CONTAINER_ID ?? 'GTM-PGNFRQDZ';
+export const posthogEnabled = /^phc_[A-Za-z0-9_-]{10,}$/.test(configuredToken ?? '');
+export const googleAnalyticsEnabled = /^GTM-[A-Z0-9]{6,}$/.test(configuredGtmId ?? '');
+export const analyticsEnabled = posthogEnabled || googleAnalyticsEnabled;
+export const posthogOnlyChoiceKey = 'arthur-analytics-choice-v1';
+export const analyticsChoiceKey = googleAnalyticsEnabled ? 'arthur-analytics-choice-v2' : posthogOnlyChoiceKey;
 const eventNames = new Set(['$pageview', 'film_opened', 'youtube_clicked', 'share_opened', 'enquiry_sent']);
 const publicPaths = new Set([
   '/', '/about', '/blog', '/blog/behind-the-camera', '/shabbat-sesh',
@@ -19,11 +23,50 @@ let fallbackChoice: AnalyticsChoice | null = null;
 let sdk: typeof import('posthog-js/dist/module.no-external').default | undefined;
 let starting: Promise<void> | undefined;
 let lastPageviewPath: string | undefined;
+let gtmLoaded = false;
+
+type GoogleWindow = Window & { dataLayer?: unknown[] };
+
+function googleTag(...args: unknown[]) {
+  const browser = window as GoogleWindow;
+  (browser.dataLayer ??= []).push(args);
+}
+
+function googleConsent(analyticsStorage: 'granted' | 'denied') {
+  googleTag('consent', 'update', {
+    analytics_storage: analyticsStorage,
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+  });
+}
+
+function startGoogleAnalytics() {
+  if (!googleAnalyticsEnabled || !configuredGtmId || getAnalyticsChoice() !== 'allow' || gtmLoaded) return;
+  const browser = window as GoogleWindow;
+  browser.dataLayer ??= [];
+  googleTag('consent', 'default', {
+    analytics_storage: 'denied',
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+  });
+  googleConsent('granted');
+  googleTag('js', new Date());
+  browser.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtm.js?id=${configuredGtmId}`;
+  script.dataset.arthurGtm = configuredGtmId;
+  document.head.append(script);
+  gtmLoaded = true;
+}
 
 export function getAnalyticsChoice() {
   if (fallbackChoice !== null) return fallbackChoice;
   try {
     const saved = localStorage.getItem(analyticsChoiceKey);
+    if (googleAnalyticsEnabled && localStorage.getItem(posthogOnlyChoiceKey) === 'decline') return 'decline';
     return saved === 'allow' || saved === 'decline' ? saved : null;
   } catch {
     return null;
@@ -57,7 +100,7 @@ function recordPageview() {
 }
 
 function startAnalytics() {
-  if (!analyticsEnabled || !configuredToken || getAnalyticsChoice() !== 'allow' || starting) return;
+  if (!posthogEnabled || !configuredToken || getAnalyticsChoice() !== 'allow' || starting) return;
   if (sdk) {
     if (sdk.has_opted_out_capturing()) sdk.opt_in_capturing({ captureEventName: false });
     recordPageview();
@@ -121,12 +164,21 @@ function startAnalytics() {
 }
 
 export function initializePortfolioAnalytics() {
-  if (getAnalyticsChoice() === 'allow') startAnalytics();
-  else sdk?.opt_out_capturing();
+  if (getAnalyticsChoice() === 'allow') {
+    startAnalytics();
+    startGoogleAnalytics();
+  } else {
+    sdk?.opt_out_capturing();
+    if (gtmLoaded) {
+      googleConsent('denied');
+      window.location.reload();
+    }
+  }
 }
 
 export function setAnalyticsChoice(next: AnalyticsChoice) {
   try {
+    if (googleAnalyticsEnabled) localStorage.setItem(posthogOnlyChoiceKey, next);
     localStorage.setItem(analyticsChoiceKey, next);
     fallbackChoice = null;
   } catch {

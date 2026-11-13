@@ -7,8 +7,11 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } 
 import {
   analyticsEnabled,
   analyticsChoiceKey,
+  googleAnalyticsEnabled,
   getAnalyticsChoice,
   initializePortfolioAnalytics,
+  posthogOnlyChoiceKey,
+  posthogEnabled,
   setAnalyticsChoice,
   type AnalyticsChoice,
 } from '@/lib/portfolio-analytics';
@@ -25,7 +28,7 @@ export default function AnalyticsSettings() {
       initializePortfolioAnalytics();
     }
     function syncChoice(event: StorageEvent) {
-      if (event.key === analyticsChoiceKey || event.key === null) applyChoice();
+      if (event.key === analyticsChoiceKey || (googleAnalyticsEnabled && event.key === posthogOnlyChoiceKey) || event.key === null) applyChoice();
     }
     applyChoice();
     window.addEventListener('storage', syncChoice);
@@ -40,31 +43,41 @@ export default function AnalyticsSettings() {
     setSettingsOpen(false);
   }
 
+  const providers = googleAnalyticsEnabled
+    ? posthogEnabled ? 'PostHog and Google Analytics' : 'Google Analytics'
+    : 'PostHog';
   const actions = <>
     <Button type="button" variant="outline" size="lg" onClick={() => save('decline')}>Decline</Button>
-    <Button type="button" size="lg" onClick={() => save('allow')}>Allow analytics</Button>
+    <Button type="button" size="lg" onClick={() => save('allow')}>Allow cookies</Button>
   </>;
 
   return <>
     {choice === null && <aside
-      aria-label="Optional analytics"
-      className="fixed inset-x-3 bottom-3 z-40 mx-auto flex max-w-xl flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background p-4 shadow-lg"
+      aria-label="Optional cookies"
+      className="fixed inset-x-3 bottom-3 z-40 mx-auto flex max-w-2xl flex-col gap-4 rounded-lg border border-border bg-background p-4 shadow-lg sm:flex-row sm:items-end sm:justify-between"
     >
-      <p className="max-w-68 text-sm leading-relaxed">Allow PostHog to measure visits and use of the portfolio?</p>
-      <div className="flex flex-wrap gap-2">{actions}</div>
+      <div className="max-w-sm">
+        <p className="font-sans text-sm font-semibold">Optional cookies</p>
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+          Allow {providers} to measure visits and site use with cookies or similar storage?
+          Contact form entries are excluded.
+        </p>
+      </div>
+      <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>
     </aside>}
     <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
       <DialogTrigger className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
-        Analytics settings
+        Cookie settings
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle className="font-sans! text-xl! tracking-normal!">Analytics settings</DialogTitle>
+        <DialogTitle className="font-sans! text-xl! tracking-normal!">Cookie settings</DialogTitle>
         <DialogDescription>
-          PostHog measures visits, film clicks, share clicks and whether the contact form succeeded.
-          It receives the page and referring site. Contact details and session recordings are excluded.
+          {posthogEnabled && 'PostHog measures visits, film clicks, share clicks and whether the contact form succeeded. '}
+          {googleAnalyticsEnabled && 'Google Analytics measures visits and how people reach the site. '}
+          They use cookies or similar storage. Contact form entries and session recordings are excluded.
           You can change your choice at any time.
         </DialogDescription>
-        <p className="text-muted-foreground">Analytics is {choice === 'allow' ? 'on' : 'off'}.</p>
+        <p className="text-muted-foreground">Optional analytics is {choice === 'allow' ? 'on' : 'off'}.</p>
         <div className="flex flex-wrap gap-2">{actions}</div>
       </DialogContent>
     </Dialog>
