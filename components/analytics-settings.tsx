@@ -21,7 +21,7 @@ import {
 export default function AnalyticsSettings() {
   const pathname = usePathname();
   const [preferences, setPreferences] = useState<AnalyticsPreferences | null | undefined>(undefined);
-  const [draft, setDraft] = useState<AnalyticsPreferences>({ posthog: false, google: false });
+  const [draft, setDraft] = useState<AnalyticsPreferences>({ posthog: posthogEnabled, google: googleAnalyticsEnabled });
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
@@ -46,14 +46,14 @@ export default function AnalyticsSettings() {
     setSettingsOpen(false);
   }
 
-  function quickChoice(next: 'allow' | 'decline') {
-    setAnalyticsChoice(next);
-    setPreferences({ posthog: next === 'allow' && posthogEnabled, google: next === 'allow' && googleAnalyticsEnabled });
+  function allowAll() {
+    setAnalyticsChoice('allow');
+    setPreferences({ posthog: posthogEnabled, google: googleAnalyticsEnabled });
     setSettingsOpen(false);
   }
 
   function openSettings() {
-    setDraft(preferences ?? { posthog: false, google: false });
+    setDraft(preferences ?? { posthog: posthogEnabled, google: googleAnalyticsEnabled });
     setSettingsOpen(true);
   }
 
@@ -61,8 +61,8 @@ export default function AnalyticsSettings() {
     ? posthogEnabled ? 'PostHog and Google Analytics' : 'Google Analytics'
     : 'PostHog';
   const actions = <div className={styles.actions}>
-    <button type="button" className={[styles.action, styles.decline].join(' ')} onClick={() => quickChoice('decline')}>Decline</button>
-    <button type="button" className={[styles.action, styles.allow].join(' ')} onClick={() => quickChoice('allow')}>Allow cookies</button>
+    <button type="button" className={styles.action} onClick={openSettings}>Cookie settings</button>
+    <button type="button" className={[styles.action, styles.allow].join(' ')} onClick={allowAll}>Allow cookies</button>
   </div>;
 
   return <>
@@ -74,7 +74,6 @@ export default function AnalyticsSettings() {
         </p>
       </div>
       <div className={styles.controls}>
-        <button type="button" className={styles.details} onClick={openSettings}>Cookie settings</button>
         {actions}
       </div>
     </aside>}
@@ -85,7 +84,10 @@ export default function AnalyticsSettings() {
       <DialogContent className={styles.dialog}>
         <DialogTitle className={styles.dialogTitle}>Cookie settings</DialogTitle>
         <DialogDescription className={styles.dialogDescription}>
-          Choose which analytics you allow. Contact form entries and session recordings are excluded. You can change this at any time.
+          {preferences === null
+            ? 'Available analytics start selected. Uncheck anything you do not want. Nothing starts until you save. '
+            : 'Uncheck any analytics you do not want. Changes take effect when you save. '}
+          Contact form entries and session recordings are excluded.
         </DialogDescription>
         <div className={styles.preferenceList}>
           {posthogEnabled && <label htmlFor="posthog-consent" aria-label="PostHog analytics" className={styles.preference}>

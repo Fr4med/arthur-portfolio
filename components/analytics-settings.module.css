@@ -67,13 +67,12 @@
 .controls {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 14px;
   padding-top: 12px;
   border-top: 1px solid #52606d;
 }
 
-.details,
 .footerTrigger {
   min-height: 44px;
   padding: 10px 0;
@@ -87,7 +86,6 @@
   text-underline-offset: 4px;
 }
 
-.details:hover,
 .footerTrigger:hover {
   color: #fff;
 }
@@ -129,7 +127,6 @@
   background: var(--brand-blue-light);
 }
 
-.details:focus-visible,
 .footerTrigger:focus-visible,
 .action:focus-visible {
   outline: 2px solid var(--brand-blue-light);
@@ -260,11 +257,6 @@
     display: block;
   }
 
-  .details {
-    display: block;
-    margin-bottom: 3px;
-  }
-
   .actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -291,10 +283,6 @@
 
   .controls {
     padding-top: 7px;
-  }
-
-  .details {
-    margin-bottom: 0;
   }
 
   .dialog[data-slot='dialog-content'] {
