@@ -1,4 +1,5 @@
 export type AnalyticsChoice = 'allow' | 'decline';
+export type AnalyticsPreferences = { posthog: boolean; google: boolean };
 
 export type PortfolioEvent =
   | { name: '$pageview' }
@@ -12,14 +13,15 @@ export const posthogEnabled = /^phc_[A-Za-z0-9_-]{10,}$/.test(configuredToken ??
 export const googleAnalyticsEnabled = /^GTM-[A-Z0-9]{6,}$/.test(configuredGtmId ?? '');
 export const analyticsEnabled = posthogEnabled || googleAnalyticsEnabled;
 export const posthogOnlyChoiceKey = 'arthur-analytics-choice-v1';
-export const analyticsChoiceKey = googleAnalyticsEnabled ? 'arthur-analytics-choice-v2' : posthogOnlyChoiceKey;
+export const previousAnalyticsChoiceKey = 'arthur-analytics-choice-v2';
+export const analyticsChoiceKey = 'arthur-analytics-choice-v3';
 const eventNames = new Set(['$pageview', 'film_opened', 'youtube_clicked', 'share_opened', 'enquiry_sent']);
 const publicPaths = new Set([
   '/', '/about', '/blog', '/blog/behind-the-camera', '/shabbat-sesh',
   '/evyatar-tahar-rvca-il', '/daniel-torneo-play-outside',
 ]);
 
-let fallbackChoice: AnalyticsChoice | null = null;
+let fallbackPreferences: AnalyticsPreferences | null = null;
 let sdk: typeof import('posthog-js/dist/module.no-external').default | undefined;
 let starting: Promise<void> | undefined;
 let lastPageviewPath: string | undefined;
@@ -42,7 +44,7 @@ function googleConsent(analyticsStorage: 'granted' | 'denied') {
 }
 
 function startGoogleAnalytics() {
-  if (!googleAnalyticsEnabled || !configuredGtmId || getAnalyticsChoice() !== 'allow' || gtmLoaded) return;
+  if (!googleAnalyticsEnabled || !configuredGtmId || !getAnalyticsPreferences()?.google || gtmLoaded) return;
   const browser = window as GoogleWindow;
   browser.dataLayer ??= [];
   googleTag('consent', 'default', {
@@ -62,12 +64,28 @@ function startGoogleAnalytics() {
   gtmLoaded = true;
 }
 
-export function getAnalyticsChoice() {
-  if (fallbackChoice !== null) return fallbackChoice;
+export function getAnalyticsPreferences(): AnalyticsPreferences | null {
+  if (fallbackPreferences !== null) return fallbackPreferences;
   try {
     const saved = localStorage.getItem(analyticsChoiceKey);
-    if (googleAnalyticsEnabled && localStorage.getItem(posthogOnlyChoiceKey) === 'decline') return 'decline';
-    return saved === 'allow' || saved === 'decline' ? saved : null;
+    if (saved) {
+      const parsed: unknown = JSON.parse(saved);
+      if (parsed && typeof parsed === 'object' && 'posthog' in parsed && 'google' in parsed
+        && typeof parsed.posthog === 'boolean' && typeof parsed.google === 'boolean') {
+        return { posthog: parsed.posthog && posthogEnabled, google: parsed.google && googleAnalyticsEnabled };
+      }
+    }
+    // Existing visitors keep their earlier whole-site choice. A PostHog-only
+    // opt-in from v1 must never grant Google Analytics access.
+    if (localStorage.getItem(posthogOnlyChoiceKey) === 'decline') return { posthog: false, google: false };
+    const previous = localStorage.getItem(previousAnalyticsChoiceKey);
+    if (previous === 'allow' || previous === 'decline') {
+      return { posthog: previous === 'allow' && posthogEnabled, google: previous === 'allow' && googleAnalyticsEnabled };
+    }
+    if (!googleAnalyticsEnabled && localStorage.getItem(posthogOnlyChoiceKey) === 'allow') {
+      return { posthog: posthogEnabled, google: false };
+    }
+    return null;
   } catch {
     return null;
   }
@@ -100,7 +118,7 @@ function recordPageview() {
 }
 
 function startAnalytics() {
-  if (!posthogEnabled || !configuredToken || getAnalyticsChoice() !== 'allow' || starting) return;
+  if (!posthogEnabled || !configuredToken || !getAnalyticsPreferences()?.posthog || starting) return;
   if (sdk) {
     if (sdk.has_opted_out_capturing()) sdk.opt_in_capturing({ captureEventName: false });
     recordPageview();
@@ -108,7 +126,7 @@ function startAnalytics() {
   }
   const token = configuredToken;
   starting = import('posthog-js/dist/module.no-external').then(({ default: posthog }) => {
-    if (getAnalyticsChoice() !== 'allow') return;
+    if (!getAnalyticsPreferences()?.posthog) return;
     if (!sdk) {
       posthog.init(token, {
         api_host: 'https://eu.i.posthog.com',
@@ -129,7 +147,7 @@ function startAnalytics() {
         save_referrer: false,
         request_batching: false,
         before_send: event => {
-          if (!event || getAnalyticsChoice() !== 'allow' || !eventNames.has(event.event)) return null;
+          if (!event || !getAnalyticsPreferences()?.posthog || !eventNames.has(event.event)) return null;
           const path = location.pathname.replace(/\/$/, '') || '/';
           if (!publicPaths.has(path)) return null;
           const props = event.properties;
@@ -164,32 +182,43 @@ function startAnalytics() {
 }
 
 export function initializePortfolioAnalytics() {
-  if (getAnalyticsChoice() === 'allow') {
+  const preferences = getAnalyticsPreferences();
+  if (preferences?.posthog) {
     startAnalytics();
-    startGoogleAnalytics();
   } else {
     sdk?.opt_out_capturing();
-    if (gtmLoaded) {
-      googleConsent('denied');
-      window.location.reload();
-    }
+    lastPageviewPath = undefined;
+  }
+  if (preferences?.google) {
+    startGoogleAnalytics();
+  } else if (gtmLoaded) {
+    googleConsent('denied');
+    window.location.reload();
   }
 }
 
-export function setAnalyticsChoice(next: AnalyticsChoice) {
+export function setAnalyticsPreferences(next: AnalyticsPreferences) {
+  const preferences = { posthog: next.posthog && posthogEnabled, google: next.google && googleAnalyticsEnabled };
   try {
-    if (googleAnalyticsEnabled) localStorage.setItem(posthogOnlyChoiceKey, next);
-    localStorage.setItem(analyticsChoiceKey, next);
-    fallbackChoice = null;
+    localStorage.setItem(analyticsChoiceKey, JSON.stringify(preferences));
+    // If the previous release is restored, partial consent must become decline.
+    const previousChoice = preferences.posthog && preferences.google ? 'allow' : 'decline';
+    localStorage.setItem(posthogOnlyChoiceKey, previousChoice);
+    localStorage.setItem(previousAnalyticsChoiceKey, previousChoice);
+    fallbackPreferences = null;
   } catch {
-    // The choice still applies for this page.
-    fallbackChoice = next;
+    // The preferences still apply for this page.
+    fallbackPreferences = preferences;
   }
   initializePortfolioAnalytics();
 }
 
+export function setAnalyticsChoice(next: AnalyticsChoice) {
+  setAnalyticsPreferences({ posthog: next === 'allow', google: next === 'allow' });
+}
+
 export function recordPortfolioEvent(event: PortfolioEvent) {
-  if (!sdk || getAnalyticsChoice() !== 'allow') return;
+  if (!sdk || !getAnalyticsPreferences()?.posthog) return;
   try {
     return sdk.capture(event.name, {
       ...('filmId' in event ? { film_id: event.filmId } : {}),
