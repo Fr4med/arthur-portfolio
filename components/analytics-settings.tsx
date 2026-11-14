@@ -57,9 +57,8 @@ export default function AnalyticsSettings() {
     setSettingsOpen(true);
   }
 
-  const providers = googleAnalyticsEnabled
-    ? posthogEnabled ? 'PostHog and Google Analytics' : 'Google Analytics'
-    : 'PostHog';
+  const analyticsChecked = (!posthogEnabled || draft.posthog) && (!googleAnalyticsEnabled || draft.google);
+  const analyticsMixed = ((posthogEnabled && draft.posthog) || (googleAnalyticsEnabled && draft.google)) && !analyticsChecked;
   const actions = <div className={styles.actions}>
     <button type="button" className={styles.action} onClick={openSettings}>Cookie settings</button>
     <button type="button" className={[styles.action, styles.allow].join(' ')} onClick={allowAll}>Allow cookies</button>
@@ -70,7 +69,7 @@ export default function AnalyticsSettings() {
       <div className={styles.frame}>
         <h2 className={styles.heading}>YOUR CALL.</h2>
         <p className={styles.description}>
-          {providers} {posthogEnabled && googleAnalyticsEnabled ? 'use' : 'uses'} cookies or similar storage to measure site use. Contact form entries are excluded.
+          Optional third-party analytics help us understand visits and site use. Manage cookies and similar storage in Cookie settings.
         </p>
       </div>
       <div className={styles.controls}>
@@ -85,20 +84,36 @@ export default function AnalyticsSettings() {
         <DialogTitle className={styles.dialogTitle}>Cookie settings</DialogTitle>
         <DialogDescription className={styles.dialogDescription}>
           {preferences === null
-            ? 'Available analytics start selected. Uncheck anything you do not want. Nothing starts until you save. '
-            : 'Uncheck any analytics you do not want. Changes take effect when you save. '}
+            ? 'Optional analytics starts selected. Uncheck it if you do not want it. Nothing starts until you save. '
+            : 'Choose which optional analytics to allow. Changes take effect when you save. '}
           Contact form entries and session recordings are excluded.
         </DialogDescription>
         <div className={styles.preferenceList}>
-          {posthogEnabled && <label htmlFor="posthog-consent" aria-label="PostHog analytics" className={styles.preference}>
-            <span><strong>PostHog</strong><small>Visits, film and share clicks, enquiry success</small></span>
-            <input id="posthog-consent" type="checkbox" checked={draft.posthog} onChange={event => setDraft(current => ({ ...current, posthog: event.target.checked }))} />
-          </label>}
-          {googleAnalyticsEnabled && <label htmlFor="google-consent" aria-label="Google Analytics" className={styles.preference}>
-            <span><strong>Google Analytics</strong><small>Visits and how people reach the site</small></span>
-            <input id="google-consent" type="checkbox" checked={draft.google} onChange={event => setDraft(current => ({ ...current, google: event.target.checked }))} />
-          </label>}
+          <div className={styles.required}>
+            <span><strong>Strictly necessary</strong><small>Stores your cookie choice and supports site security</small></span>
+            <span className={styles.alwaysOn}>Always on</span>
+          </div>
+          <label htmlFor="analytics-consent" aria-label="Analytics cookies" className={styles.preference}>
+            <span><strong>Analytics cookies</strong><small>Help us understand visits and improve the site</small></span>
+            <input id="analytics-consent" type="checkbox" checked={analyticsChecked}
+              ref={element => { if (element) element.indeterminate = analyticsMixed; }}
+              onChange={event => setDraft({ posthog: event.target.checked && posthogEnabled, google: event.target.checked && googleAnalyticsEnabled })} />
+          </label>
         </div>
+        <details className={styles.providerDetails}>
+          <summary>Provider details</summary>
+          <p>These services run only with saved consent. Changes take effect when you save.</p>
+          <div className={styles.providerList}>
+            {posthogEnabled && <label htmlFor="posthog-consent" aria-label="PostHog analytics" className={styles.preference}>
+              <span><strong>PostHog</strong><small>Visits, film and share clicks, enquiry success</small></span>
+              <input id="posthog-consent" type="checkbox" checked={draft.posthog} onChange={event => setDraft(current => ({ ...current, posthog: event.target.checked }))} />
+            </label>}
+            {googleAnalyticsEnabled && <label htmlFor="google-consent" aria-label="Google Analytics" className={styles.preference}>
+              <span><strong>Google Analytics</strong><small>Visits and how people reach the site</small></span>
+              <input id="google-consent" type="checkbox" checked={draft.google} onChange={event => setDraft(current => ({ ...current, google: event.target.checked }))} />
+            </label>}
+          </div>
+        </details>
         <button type="button" className={[styles.action, styles.allow, styles.save].join(' ')} onClick={() => save(draft)}>Save choices</button>
       </DialogContent>
     </Dialog>
