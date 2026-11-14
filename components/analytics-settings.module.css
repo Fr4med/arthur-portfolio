@@ -1,0 +1,243 @@
+.banner {
+  position: fixed;
+  z-index: 40;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(680px, calc(100vw - 40px));
+  padding: 22px 24px 20px;
+  background: #10161e;
+  color: #eae9df;
+  box-shadow: 0 12px 30px #0009;
+}
+
+.banner::before,
+.banner::after,
+.dialog::before,
+.dialog::after {
+  position: absolute;
+  width: 27px;
+  height: 27px;
+  content: '';
+  pointer-events: none;
+}
+
+.banner::before,
+.dialog::before {
+  top: 10px;
+  left: 10px;
+  border-top: 2px solid var(--brand-blue);
+  border-left: 2px solid var(--brand-blue);
+}
+
+.banner::after,
+.dialog::after {
+  right: 10px;
+  bottom: 10px;
+  border-right: 2px solid var(--brand-blue);
+  border-bottom: 2px solid var(--brand-blue);
+}
+
+.frame {
+  display: grid;
+  grid-template-columns: 165px minmax(0, 1fr);
+  gap: 18px;
+  padding: 6px 3px 16px;
+}
+
+.heading {
+  margin: 0;
+  color: var(--brand-blue);
+  font-family: var(--font-display), Impact, sans-serif;
+  font-size: 48px;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 0.96;
+}
+
+.description {
+  max-width: 39ch;
+  margin: 0;
+  color: #d6dbe0;
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #52606d;
+}
+
+.details,
+.footerTrigger {
+  min-height: 44px;
+  padding: 10px 0;
+  border: 0;
+  background: none;
+  color: #d6dbe0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.details:hover,
+.footerTrigger:hover {
+  color: #fff;
+}
+
+.footerTrigger {
+  color: var(--muted-foreground);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action {
+  min-height: 46px;
+  padding: 0 20px;
+  border: 1px solid #788694;
+  border-radius: 0;
+  background: transparent;
+  color: #eae9df;
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.action:hover {
+  background: #253341;
+}
+
+.allow {
+  border-color: var(--brand-blue);
+  background: var(--brand-blue);
+  color: #0b1420;
+}
+
+.allow:hover {
+  border-color: var(--brand-blue-light);
+  background: var(--brand-blue-light);
+}
+
+.details:focus-visible,
+.footerTrigger:focus-visible,
+.action:focus-visible {
+  outline: 2px solid var(--brand-blue-light);
+  outline-offset: 3px;
+}
+
+.dialog[data-slot='dialog-content'] {
+  width: min(540px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  gap: 16px;
+  padding: 28px 26px 24px;
+  border-radius: 0;
+  background: #10161e;
+  color: #eae9df;
+  box-shadow: 0 12px 30px #0009;
+  --color-ring: transparent;
+}
+
+.dialog .dialogTitle {
+  margin-right: 32px;
+  color: var(--brand-blue);
+  font-family: var(--font-display), Impact, sans-serif;
+  font-size: 42px;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+
+.dialog .dialogDescription {
+  color: #d6dbe0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.dialogStatus {
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid #52606d;
+  color: #d6dbe0;
+  font-size: 13px;
+}
+
+.dialog :global([data-slot='dialog-close']) {
+  color: #eae9df;
+}
+
+@media (max-width: 700px) {
+  .banner {
+    bottom: 18px;
+    left: 16px;
+    transform: none;
+    width: calc(100vw - 32px);
+    padding: 20px 22px 18px;
+  }
+
+  .frame {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .heading {
+    font-size: 42px;
+  }
+
+  .controls {
+    display: block;
+  }
+
+  .details {
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .action {
+    padding: 0 6px;
+  }
+}
+
+@media (max-width: 340px) {
+  .banner {
+    padding: 10px 18px;
+  }
+
+  .frame {
+    gap: 4px;
+    padding-bottom: 8px;
+  }
+
+  .heading {
+    font-size: 34px;
+  }
+
+  .controls {
+    padding-top: 7px;
+  }
+
+  .details {
+    margin-bottom: 0;
+  }
+
+  .dialog[data-slot='dialog-content'] {
+    padding: 22px 18px 18px;
+  }
+}
